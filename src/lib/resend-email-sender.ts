@@ -4,7 +4,7 @@ import { Resend } from 'resend';
 
 // Use the new API key with full permissions for audience management
 const resendAudience = new Resend(process.env.RESEND_AUDIENCE_API_KEY);
-// Keep the restricted API key for regular email sending  
+// Keep the restricted API key for regular email sending
 const resendEmail = new Resend(process.env.RESEND_API_KEY);
 const audienceId = process.env.RESEND_AUDIENCE_ID || 'e12a1895-312b-4738-af4c-9100196fdc25';
 
@@ -69,36 +69,6 @@ export const addSubscriberToAudience = async (
   }
 };
 
-// Update subscriber in Resend audience
-export const updateSubscriberInAudience = async (
-  email: string,
-  subscriberData: Partial<SubscriberData>
-): Promise<{ success: boolean; error?: string; data?: any }> => {
-  try {
-    const { data, error } = await resendAudience.contacts.update({
-      email: email,
-      audienceId: audienceId,
-      ...subscriberData,
-    });
-
-    if (error) {
-      console.error('Resend API error updating subscriber:', error);
-      return {
-        success: false,
-        error: error.message || 'Failed to update subscriber in audience',
-      };
-    }
-
-    // Successfully updated subscriber in audience
-    return { success: true, data };
-  } catch (error: any) {
-    console.error('Error updating subscriber in Resend audience:', error);
-    return {
-      success: false,
-      error: error.message || 'Failed to update subscriber in audience',
-    };
-  }
-};
 
 // Send individual email using Resend
 export const sendCustomEmail = async (
@@ -173,42 +143,90 @@ export const sendCustomEmailWithRetry = async (
   };
 };
 
-// Send newsletter to entire audience
-export const sendNewsletterToAudience = async (
+// Create newsletter broadcast
+export const createNewsletterBroadcast = async (
   subject: string,
   htmlContent: string,
   fromName: string = 'Kay from Toasted Sesame',
   replyTo: string = 'care@toastedsesametherapy.com'
+  ): Promise<EmailResult> => {
+    try {
+      // Validate required configuration
+      if (!process.env.RESEND_AUDIENCE_API_KEY) {
+        console.error('❌ Missing RESEND_AUDIENCE_API_KEY');
+        return { success: false, error: 'RESEND_AUDIENCE_API_KEY not configured' };
+      }
+      if (!audienceId) {
+        console.error('❌ Missing RESEND_AUDIENCE_ID');
+        return { success: false, error: 'RESEND_AUDIENCE_ID not configured' };
+      }
+
+      const { data, error } = await resendAudience.broadcasts.create({
+        audienceId: audienceId,
+        from: `${fromName} <${replyTo}>`,
+        subject: subject,
+        html: htmlContent,
+      });
+
+      if (error) {
+        console.error('❌ Resend API error creating broadcast:', error);
+        return { success: false, error: error.message || 'Failed to create broadcast', details: error };
+      }
+
+
+      return {
+        success: true,
+        emailId: data?.id,
+        message: 'Newsletter broadcast created successfully',
+      };
+    } catch (error: any) {
+      console.error('❌ Newsletter broadcast creation error:', {
+        message: error.message,
+        stack: error.stack,
+        audienceId,
+      });
+      return { success: false, error: error.message || 'Failed to create newsletter broadcast', details: error };
+    }
+};
+
+// Send existing broadcast
+export const sendNewsletterBroadcast = async (
+  broadcastId: string,
+  scheduledAt: string = 'now'
 ): Promise<EmailResult> => {
   try {
-    const { data, error } = await resendAudience.broadcasts.create({
-      from: `${fromName} <${replyTo}>`,
-      subject: subject,
-      html: htmlContent,
-      audienceId: audienceId,
-    });
-
-    if (error) {
-      console.error('Resend API error sending newsletter:', error);
-      return {
-        success: false,
-        error: error.message || 'Failed to send newsletter',
-        details: error,
-      };
+    if (!process.env.RESEND_AUDIENCE_API_KEY) {
+      console.error('❌ Missing RESEND_AUDIENCE_API_KEY');
+      return { success: false, error: 'RESEND_AUDIENCE_API_KEY not configured' };
     }
 
-    // Successfully sent newsletter to audience
+
+
+    const sendParams: any = {};
+    if (scheduledAt && scheduledAt !== 'now') {
+      sendParams.scheduledAt = scheduledAt;
+    }
+
+    const { data, error } = await resendAudience.broadcasts.send(broadcastId, sendParams);
+
+    if (error) {
+      console.error('❌ Resend API error sending broadcast:', error);
+      return { success: false, error: error.message || 'Failed to send broadcast', details: error };
+    }
+
+
     return {
       success: true,
       emailId: data?.id,
-      message: 'Newsletter sent successfully to audience',
+      message: 'Newsletter broadcast sent successfully',
     };
   } catch (error: any) {
-    console.error('Newsletter sending error:', error);
-    return {
-      success: false,
-      error: error.message || 'Failed to send newsletter',
-      details: error,
-    };
+    console.error('❌ Newsletter broadcast send error:', {
+      message: error.message,
+      stack: error.stack,
+      broadcastId,
+    });
+    return { success: false, error: error.message || 'Failed to send newsletter broadcast', details: error };
   }
 };
+

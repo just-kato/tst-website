@@ -148,6 +148,20 @@ export const getEmailHtml = (data: any): string => {
       a {
         text-decoration: none;
         outline: none;
+        cursor: pointer !important;
+      }
+
+      a[href] {
+        cursor: pointer !important;
+        text-decoration: underline !important;
+      }
+
+      .unsubscribe-link {
+        color: #C5A1FF !important;
+        text-decoration: underline !important;
+        font-weight: bold !important;
+        cursor: pointer !important;
+        display: inline-block !important;
       }
 
       /* FIXED: Better image handling for email clients */
@@ -321,7 +335,13 @@ export const getEmailHtml = (data: any): string => {
           <tr>
             <td style="padding:20px 30px; text-align:center;" class="mobile-padding">
               <p style="font-family:'Work Sans',Arial,sans-serif; font-size:13px; font-style:italic; line-height:1.5; color:#666666; margin:0 0 15px;">These toasty thoughts are here to offer warmth and connection... Please remember, this content isn't a substitute for personalized therapy...</p>
-              <p style="font-family:'Work Sans',Arial,sans-serif; font-size:12px; line-height:1.5; color:#666666; margin:0;"><a href="https://toastedsesametherapy.com" target="_blank" style="font-weight:bold; color:#C5A1FF;">Toasted Sesame Therapy</a><br><br><br>You are receiving this email because you opted in.<br><a href="*|UNSUB|*" target="_blank" style="color:#666666; text-decoration:underline;">Unsubscribe</a></p>
+              <p style="font-family:'Work Sans',Arial,sans-serif; font-size:12px; line-height:1.5; color:#666666; margin:0 0 15px 0;">
+              <a href="https://toastedsesametherapy.com" target="_blank" style="font-weight:bold; color:#C5A1FF; text-decoration:none;">Toasted Sesame Therapy</a><br><br><br>You are receiving this email because you opted in.</p>
+            <p style="font-family:'Work Sans',Arial,sans-serif; font-size:12px; line-height:1.5; color:#666666; margin:10px 0 0; text-align:center;">
+              <a href="{{{RESEND_UNSUBSCRIBE_URL}}}" class="unsubscribe-link" target="_blank" style="color:#C5A1FF; text-decoration:underline; font-weight:bold;">
+                Unsubscribe
+              </a>
+            </p>
             </td>
           </tr>
         </table>

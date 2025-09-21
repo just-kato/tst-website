@@ -21,6 +21,16 @@ interface NewsletterEditorProps {
 
 type ArchivePost = Pick<Post, 'id' | 'title'>;
 
+// Helper function to validate URLs
+const isValidUrl = (string: string): boolean => {
+  try {
+    new URL(string);
+    return true;
+  } catch (_) {
+    return false;
+  }
+};
+
 const NewsletterEditor: React.FC<NewsletterEditorProps> = ({
   post: initialPost,
 }) => {
@@ -174,6 +184,13 @@ const NewsletterEditor: React.FC<NewsletterEditorProps> = ({
     setIsSubmitting(true);
 
     try {
+      // Validate image URL if provided
+      if (imageUrl && !isValidUrl(imageUrl)) {
+        toast.error('Please enter a valid image URL starting with http:// or https://');
+        setIsSubmitting(false);
+        return;
+      }
+
       // Generate unique slug
       const uniqueSlug = await generateUniqueSlug(title, post?.id);
 
@@ -256,13 +273,25 @@ const NewsletterEditor: React.FC<NewsletterEditorProps> = ({
   };
 
   const handleSend = async () => {
+    if (isSubmitting) {
+      return;
+    }
+
     setIsSubmitting(true);
-    const loadingToast = toast.loading('Sending newsletter...');
+    const loadingToast = toast.loading('Publishing newsletter...');
 
     try {
-      // Generate unique slug
-      const uniqueSlug = await generateUniqueSlug(title, post?.id);
+      // Validate image URL if provided
+      if (imageUrl && !isValidUrl(imageUrl)) {
+        throw new Error('Please enter a valid image URL starting with http:// or https://');
+      }
 
+      const postId = post?.id;
+
+      // Generate slug if needed
+      const slug = post?.slug || await generateUniqueSlug(title, postId);
+
+      // Prepare post data for API call
       const postData = {
         title,
         subject,
@@ -271,13 +300,16 @@ const NewsletterEditor: React.FC<NewsletterEditorProps> = ({
         toasty_take: toastyTake,
         archive_posts: archivePosts,
         tags: tags,
+        status: 'draft',
         type: 'newsletter',
         archived: false,
-        visible_to_public: true, // Newsletters are public when sent
-        slug: uniqueSlug,
-        ...(post?.id && { id: post.id }),
-        ...(post?.created_at && { created_at: post.created_at }),
+        visible_to_public: true,
+        slug: slug,
+        ...(postId && { id: postId }),
       };
+
+
+
 
       const response = await fetch('/api/newsletter/send', {
         method: 'POST',
@@ -285,12 +317,24 @@ const NewsletterEditor: React.FC<NewsletterEditorProps> = ({
         body: JSON.stringify(postData),
       });
 
+
+      // Check if response is actually JSON
+      const contentType = response.headers.get('content-type');
+      if (!contentType || !contentType.includes('application/json')) {
+        const textResponse = await response.text();
+        console.error('❌ API returned non-JSON response:', textResponse.substring(0, 500));
+        throw new Error(`API returned HTML instead of JSON. Status: ${response.status}`);
+      }
+
       const result = await response.json();
-      if (!response.ok)
-        throw new Error(result.error || 'Failed to send campaign.');
+
+      if (!response.ok) {
+        throw new Error(result.error || 'Failed to send newsletter.');
+      }
 
       toast.dismiss(loadingToast);
       toast.success('Newsletter sent successfully!');
+
       setIsPreviewing(false);
 
       // Redirect to the public post page that was just published
@@ -353,7 +397,7 @@ const NewsletterEditor: React.FC<NewsletterEditorProps> = ({
               </label>
 
               {/* Current Image Display */}
-              {imageUrl && (
+              {imageUrl && isValidUrl(imageUrl) && (
                 <div className="relative inline-block">
                   <Image
                     src={imageUrl}
@@ -369,6 +413,15 @@ const NewsletterEditor: React.FC<NewsletterEditorProps> = ({
                   >
                     <X size={16} />
                   </Button>
+                </div>
+              )}
+
+              {/* Invalid URL Warning */}
+              {imageUrl && !isValidUrl(imageUrl) && (
+                <div className="p-3 bg-red-50 border border-red-200 rounded-lg">
+                  <p className="text-red-600 text-sm">
+                    ⚠️ Invalid image URL. Please enter a valid URL starting with http:// or https://
+                  </p>
                 </div>
               )}
 
