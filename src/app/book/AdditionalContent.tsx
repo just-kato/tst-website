@@ -27,6 +27,7 @@ import Image from 'next/image';
 import CountUp from '@/components/CountUp/CountUp';
 import MiniHowItWorks from '@/components/MiniHowItWorks/MiniHowItWorks';
 import { MoonStar } from 'lucide-react';
+import BelowTheFold from '@/components/BelowTheFold/BelowTheFold';
 
 interface AdditionalContentProps {
   variant?: 'trauma' | 'affirming' | 'nd';
@@ -188,6 +189,38 @@ const AdditionalContent: React.FC<AdditionalContentProps> = ({
           <FallingPillsBookingPage />
         </motion.div>
       </Section>
+      <Section padding="none">
+        <div className="mt-16">
+          <CountUp />
+        </div>
+        {/* Testimonials */}
+        <div className="flex flex-col sm:flex-row gap-6 mt-10">
+          {testimonials.map((testimonial, index) => (
+            <motion.div key={index} variants={itemVariants} className="flex-1">
+              <TestimonialCardBooking
+                quote={testimonial.quote}
+                iconUrl={testimonial.iconUrl}
+                bgColor={testimonial.bgColor}
+                altText={testimonial.altText}
+              />
+            </motion.div>
+          ))}
+        </div>
+
+        {/* Privacy note */}
+        <div className="text-center mt-8">
+          <p className="italic text-gray-600 text-sm md:text-base pb-10">
+            Reflections paraphrased for privacy
+          </p>
+        </div>
+
+
+        </Section>
+         <div className="border-t-2 border-b-2 border-black">
+        <Section className="bg-tst-yellow">
+        <BelowTheFold />
+      </Section>
+      </div>
       <Section padding="none" paddingTop="large" paddingBottom="none" id="fit-free-works-section">
         <div className="text-center">
           <div className="max-w-4xl mx-auto px-4 mb-20">
@@ -226,32 +259,11 @@ const AdditionalContent: React.FC<AdditionalContentProps> = ({
         </div>
         {/* Testimonials in horizontal row */}
       </Section>
-      {/* Mini How It Works - Superbill Process */}
-      <Section padding="none">
-        <MiniHowItWorks />
-        <div className="mt-16">
-          <CountUp />
-        </div>
-        {/* Testimonials */}
-        <div className="flex flex-col sm:flex-row gap-6 mt-10">
-          {testimonials.map((testimonial, index) => (
-            <motion.div key={index} variants={itemVariants} className="flex-1">
-              <TestimonialCardBooking
-                quote={testimonial.quote}
-                iconUrl={testimonial.iconUrl}
-                bgColor={testimonial.bgColor}
-                altText={testimonial.altText}
-              />
-            </motion.div>
-          ))}
-        </div>
 
-        {/* Privacy note */}
-        <div className="text-center mt-8">
-          <p className="italic text-gray-600 text-sm md:text-base">
-            Reflections paraphrased for privacy
-          </p>
-        </div>
+      {/* Mini How It Works - Superbill Process */}
+      <Section className="bg-tst-purple border-t-2 border-b-2 border-black">
+        <MiniHowItWorks />
+
       </Section>
       <Section paddingBottom="large">
         <div className="h-120 mx-auto mt-24 bg-white rounded-lg shadow-brutalistLg border-2 border-black p-8 overflow-hidden">
