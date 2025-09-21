@@ -8,7 +8,7 @@ export default function ClientsCounter() {
 
   return (
     <div ref={counterRef} className="text-center space-y-2">
-      <p className="text-4xl md:text-6xl font-bold text-center w-full">
+      <p className="text-5xl md:text-6xl font-bold text-center w-full">
         Over{' '}
         <span className="text-tst-purple">
           {isInView ? (

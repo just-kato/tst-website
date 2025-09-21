@@ -41,7 +41,7 @@ export const howFitFreeWorksSteps = [
 ];
 
 export const stepSection = {
-  title: 'How to get started with your <br/>Fit-or-Free session',
+  title: 'Book → Try → Decide <br/>Fit-or-Free first session',
   subtitleTop:
     `No more wasted time or money trying therapists who don't click. <br/>If it's not a fit, you don't pay.`,
   subtitleBottom: `Here's how to get started`,
