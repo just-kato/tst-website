@@ -4,7 +4,7 @@ export const fitFreeTemplate = [
     name: 'Confirmation',
     category: 'WELCOME',
     content:
-      "Hi {{client_name}}, this is Kato with the Toasted Sesame Care Team.\n\nYou're set for:\n{{day_time_et}}\n\nIf you need to reschedule or cancel tap:\nhttps://toastedsesametherapy.com/reschedule/{{contact_uuid}}\n\nReply HELP for support. Reply STOP to opt out.\n\n1 = Confirm appointment\n2 = Reschedule\n3 = Cancel",
+      "Hi {{client_name}}, this is Kato with the Toasted Sesame Care Team.\n\nYou're set for:\n{{day_time_et}}\n\n\n1 = Confirm appointment\n2 = Reschedule\n3 = Cancel\nReply HELP for support. Reply STOP to opt out.\n",
     variables: ['client_name', 'day_time_et', 'contact_uuid'],
   },
   {
