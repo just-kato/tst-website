@@ -69,6 +69,36 @@ export const addSubscriberToAudience = async (
   }
 };
 
+// Update subscriber in Resend audience
+export const updateSubscriberInAudience = async (
+  email: string,
+  subscriberData: Partial<SubscriberData>
+): Promise<{ success: boolean; error?: string; data?: any }> => {
+  try {
+    const { data, error } = await resendAudience.contacts.update({
+      email: email,
+      audienceId: audienceId,
+      ...subscriberData,
+    });
+
+    if (error) {
+      console.error('Resend API error updating subscriber:', error);
+      return {
+        success: false,
+        error: error.message || 'Failed to update subscriber in audience',
+      };
+    }
+
+    // Successfully updated subscriber in audience
+    return { success: true, data };
+  } catch (error: any) {
+    console.error('Error updating subscriber in Resend audience:', error);
+    return {
+      success: false,
+      error: error.message || 'Failed to update subscriber in audience',
+    };
+  }
+};
 
 // Send individual email using Resend
 export const sendCustomEmail = async (
