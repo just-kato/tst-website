@@ -22,6 +22,7 @@ import {
   MessageCircle,
   ChevronLeft,
   ChevronRight,
+  Bell,
 } from 'lucide-react';
 import Link from 'next/link';
 import Image from 'next/image';
@@ -32,6 +33,7 @@ import DashboardView from '@/components/DashboardView/DashboardView';
 import AppointmentsDashboard from '@/components/AppointmentsDashboard/AppointmentsDashboard';
 import BlogView from '@/components/Blog/BlogView';
 import DashboardNotifications from '@/components/DashboardNotifications/DashboardNotifications';
+import NotificationsView from '@/components/NotificationsView/NotificationsView';
 import CRMView from '@/components/CRM/CRMView';
 
 const DashboardPage = () => {
@@ -43,6 +45,7 @@ const DashboardPage = () => {
   const [localReadNotifications, setLocalReadNotifications] = useState<
     Set<string>
   >(new Set());
+  const [unreadCount, setUnreadCount] = useState(0);
   const supabase = createClientComponentClient();
   const router = useRouter();
 
@@ -131,6 +134,28 @@ const DashboardPage = () => {
       console.error('Error saving read notifications to localStorage:', error);
     }
   }, [localReadNotifications]);
+
+  // Fetch unread notification count
+  useEffect(() => {
+    const fetchUnreadCount = async () => {
+      try {
+        const response = await fetch('/api/dashboard/notifications?limit=1');
+        const data = await response.json();
+        if (response.ok) {
+          setUnreadCount(data.unreadCount || 0);
+        }
+      } catch (error) {
+        console.error('Error fetching unread count:', error);
+      }
+    };
+
+    if (user) {
+      fetchUnreadCount();
+      // Update unread count every 30 seconds
+      const interval = setInterval(fetchUnreadCount, 30000);
+      return () => clearInterval(interval);
+    }
+  }, [user]);
 
   // Fetch notifications - moved from DashboardNotifications component
   // useEffect(() => {
@@ -309,10 +334,17 @@ const DashboardPage = () => {
   const handleMenuItemClick = (viewName: string) => {
     setActiveView(viewName);
     setIsMobileMenuOpen(false); // Close mobile menu when item is selected
+
+    // Reset unread count when navigating to notifications
+    if (viewName === 'Notifications') {
+      setUnreadCount(0);
+    }
   };
 
   const renderView = () => {
     switch (activeView) {
+      case 'Notifications':
+        return <NotificationsView />;
       case 'Newsletter':
         return <NewsletterView />;
       case 'Blogs':
@@ -335,6 +367,7 @@ const DashboardPage = () => {
 
   const menuItems = [
     { name: 'Dashboard', icon: LayoutDashboard },
+    { name: 'Notifications', icon: Bell },
     { name: 'Newsletter', icon: Mail },
     { name: 'Blogs', icon: Newspaper },
     { name: 'Leads', icon: Users },
@@ -362,13 +395,6 @@ const DashboardPage = () => {
             )}
           </button>
         )}
-        {/* Only show notifications on desktop sidebar, not mobile sidebar */}
-        {!isMobile && !isSidebarCollapsed && (
-          <DashboardNotifications
-            user={user}
-            onNotificationClick={handleNotificationClick}
-          />
-        )}
       </div>
       <nav className="flex-grow">
         <ul>
@@ -382,9 +408,23 @@ const DashboardPage = () => {
                     : 'hover:bg-gray-100'
                 }`}
               >
-                <item.icon className={`h-5 w-5 flex-shrink-0 ${!isMobile && isSidebarCollapsed ? '' : 'mr-3'}`} />
-                <span className={`${!isMobile && isSidebarCollapsed ? 'hidden' : ''}`}>
+                <div className="relative flex-shrink-0">
+                  <item.icon className="h-5 w-5" />
+                  {item.name === 'Notifications' && unreadCount > 0 && (
+                    <span className={`absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full flex items-center justify-center font-medium ${
+                      !isMobile && isSidebarCollapsed ? 'h-4 w-4' : 'h-4 w-4'
+                    }`}>
+                      {unreadCount > 9 ? '9+' : unreadCount}
+                    </span>
+                  )}
+                </div>
+                <span className={`${!isMobile && isSidebarCollapsed ? 'hidden' : 'ml-3'}`}>
                   {item.name}
+                  {item.name === 'Notifications' && unreadCount > 0 && !isSidebarCollapsed && (
+                    <span className="ml-2 bg-red-500 text-white text-xs rounded-full px-2 py-1 font-medium">
+                      {unreadCount > 99 ? '99+' : unreadCount}
+                    </span>
+                  )}
                 </span>
               </button>
             </li>
