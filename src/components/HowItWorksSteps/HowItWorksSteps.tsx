@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { motion, useInView } from 'framer-motion';
+import { useInView } from 'framer-motion';
 import Image from 'next/image';
 import styles from './HowItWorksSteps.module.css';
 import clsx from 'clsx';
@@ -23,7 +23,6 @@ interface HowItWorksStepsProps {
 const HowItWorksSteps: React.FC<HowItWorksStepsProps> = ({
   step,
   index,
-  nextStepInView = false,
 }) => {
   const ref = React.useRef(null);
   const isInView = useInView(ref, { once: true, amount: 0.5 });
@@ -94,12 +93,7 @@ const HowItWorksSteps: React.FC<HowItWorksStepsProps> = ({
 
         <div className={styles.timeline}>
           {!step.isLastStep && (
-            <motion.div
-              className={styles.timeline_progress}
-              style={{
-                height: nextStepInView ? '100%' : '0%',
-              }}
-            />
+            <div className={styles.timeline_line} />
           )}
           <div
             className={clsx(

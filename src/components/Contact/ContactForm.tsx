@@ -1,47 +1,28 @@
 // Update src/components/Contact/ContactForm.tsx
 'use client';
 
-import React, { useState, useEffect } from 'react';
-import Confetti from 'react-confetti';
-import { useMutation } from '@apollo/client/react';
+import React, { useState } from 'react';
+import { useRouter } from 'next/navigation';
 import Button from '@/components/Button/Button';
-import FAQ from '@/components/FAQ/FAQ';
 import Input from '@/components/Input/Input';
-import { CREATE_CONTACT, CREATE_NOTIFICATION } from '@/lib/graphql/mutations';
-import { getCleanPhoneNumber, formatPhoneNumber } from '@/lib/validation';
+import { formatPhoneNumber } from '@/lib/validation';
 
 interface ContactFormProps {
   isContactPage?: boolean;
   id?: string;
+  variant?: 'trauma' | 'contact';
 }
 
-const useWindowSize = () => {
-  const [size, setSize] = useState({ width: 0, height: 0 });
-  useEffect(() => {
-    const handleResize = () =>
-      setSize({ width: window.innerWidth, height: window.innerHeight });
-    handleResize();
-    window.addEventListener('resize', handleResize);
-    return () => window.removeEventListener('resize', handleResize);
-  }, []);
-  return size;
-};
-
-const ContactForm: React.FC<ContactFormProps> = ({ isContactPage = false }) => {
+const ContactForm: React.FC<ContactFormProps> = ({ isContactPage = false, variant = 'contact' }) => {
+  const router = useRouter();
   const [formData, setFormData] = useState({ name: '', email: '', phone: '' });
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [isSubmitted, setIsSubmitted] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [contactExists, setContactExists] = useState(false);
-  const { width, height } = useWindowSize();
-
-  // GraphQL mutations
-  const [createContact] = useMutation(CREATE_CONTACT);
-  const [createNotification] = useMutation(CREATE_NOTIFICATION);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
-    
+
     if (name === 'phone') {
       const formattedValue = formatPhoneNumber(value);
       if (formattedValue === 'INVALID_COUNTRY_CODE') {
@@ -52,7 +33,7 @@ const ContactForm: React.FC<ContactFormProps> = ({ isContactPage = false }) => {
     } else {
       setFormData({ ...formData, [name]: value });
     }
-    
+
     // Clear error when user starts typing
     if (error) setError(null);
     if (contactExists) setContactExists(false);
@@ -66,104 +47,50 @@ const ContactForm: React.FC<ContactFormProps> = ({ isContactPage = false }) => {
     setContactExists(false);
 
     try {
-      // Create contact via GraphQL
-      const { data } = await createContact({
-        variables: {
-          input: {
-            name: formData.name,
-            email: formData.email.toLowerCase(),
-            phoneNumber: getCleanPhoneNumber(formData.phone),
-            segments: ['Contact Form Lead'],
-            crmNotes: `Contact form submission on ${new Date().toLocaleDateString()}`,
-            customFields: {
-              source: 'contact_form',
-              submittedAt: new Date().toISOString()
-            },
-            sendWelcomeEmail: true // Send welcome email via GraphQL
-          }
-        }
+      const response = await fetch('/api/contact', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          name: formData.name.trim(),
+          email: formData.email.toLowerCase().trim(),
+          phone: formData.phone.trim(),
+          variant: variant,
+        }),
       });
 
-      if (!(data as any)?.createContact) {
-        throw new Error('Failed to create contact');
-      }
+      const data = await response.json();
 
-      const newContact = (data as any).createContact;
+      if (!response.ok) {
+        if (response.status === 409 && data.contactExists) {
+          setContactExists(true);
+          setError(data.error);
+          return;
+        }
+        throw new Error(data.error || 'Failed to submit contact form');
+      }
 
       // Track the lead generation
       window.dataLayer = window.dataLayer || [];
       window.dataLayer.push({
         event: 'generate_lead_form_start',
-        page_source: isContactPage ? 'contact' : 'homepage',
+        page_source: variant === 'trauma' ? 'trauma_booking' : (isContactPage ? 'contact' : 'homepage'),
         form_location: window.location.pathname,
-        form_type: isContactPage ? 'contact' : 'homepage',
+        form_type: variant === 'trauma' ? 'trauma_booking' : (isContactPage ? 'contact' : 'homepage'),
+        variant: variant,
       });
 
-      // Show success state directly (no questionnaire redirect)
-      setIsSubmitted(true);
+      // Redirect to thank you page
+      router.push('/success-thank-you');
     } catch (err: any) {
       console.error('Contact form submission error:', err);
-      
-      // Handle duplicate contact GraphQL error
-      if (err.message && err.message.includes('already exists')) {
-        setContactExists(true);
-        setError(err.message);
-        return;
-      }
-
-      // Handle other GraphQL errors
-      if (err.graphQLErrors && err.graphQLErrors.length > 0) {
-        const firstError = err.graphQLErrors[0];
-        if (firstError.message.includes('already exists')) {
-          setContactExists(true);
-          setError(firstError.message);
-          return;
-        }
-        setError(firstError.message);
-      } else if (err.networkError) {
-        setError('Network error. Please check your connection and try again.');
-      } else if (err.message) {
-        setError(err.message);
-      } else {
-        setError('An unexpected error occurred. Please try again.');
-      }
+      setError(err.message || 'An unexpected error occurred. Please try again.');
     } finally {
       setIsSubmitting(false);
     }
   };
 
-  const renderPostSubmitContent = () => {
-    return (
-      <div className="space-y-16">
-        <div className="text-center max-w-2xl mx-auto">
-          <h2 className="text-4xl font-extrabold mb-6">Thank You!</h2>
-          <h3 className="text-3xl font-bold mb-4">
-            Here&apos;s what to expect next:
-          </h3>
-          <ul className="list-disc list-inside space-y-3 text-lg text-left">
-            <li>
-              You&apos;ll receive a personal email from me within 1-2 business
-              days.
-            </li>
-            <li>
-              In the email, I&apos;ll provide a link to schedule your free
-              15-minute video consultation.
-            </li>
-            <li>
-              We&apos;ll use that time to chat, see if it&apos;s a good fit, and
-              answer any questions you have.
-            </li>
-          </ul>
-        </div>
-
-        {!isContactPage && (
-          <div className="mt-16">
-            <FAQ />
-          </div>
-        )}
-      </div>
-    );
-  };
   const handleEmailClick = () => {
     window.location.href = `mailto:hello@example.com?subject=${encodeURIComponent(
       'Follow-up on My Therapy Inquiry'
@@ -201,20 +128,7 @@ const ContactForm: React.FC<ContactFormProps> = ({ isContactPage = false }) => {
 
   return (
     <div className="relative bg-white p-12 rounded-xl border-2 border-black shadow-brutalistLg max-w-5xl mx-auto">
-      {isSubmitted && (
-        <Confetti
-          width={width}
-          height={height}
-          recycle={false}
-          numberOfPieces={500}
-          tweenDuration={8000}
-          style={{ position: 'fixed', top: 0, left: 0, zIndex: 9999 }}
-        />
-      )}
-
-      {isSubmitted ? (
-        renderPostSubmitContent()
-      ) : contactExists ? (
+      {contactExists ? (
         renderContactExistsMessage()
       ) : (
         <div className="max-w-4xl mx-auto text-center">
@@ -260,7 +174,7 @@ const ContactForm: React.FC<ContactFormProps> = ({ isContactPage = false }) => {
                   wrapperClassName="w-full"
                   disabled={isSubmitting}
                 >
-                  {isSubmitting ? 'Processing...' : 'Next →'}
+                  {isSubmitting ? 'Processing...' : 'Submit'}
                 </Button>
               </div>
               {error && !contactExists && (

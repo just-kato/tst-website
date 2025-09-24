@@ -74,11 +74,12 @@ export const meetYourTherapist = {
   ],
 };
 
+
 export const howItWorksSteps = [
   {
     number: '01',
-    title: 'Book Your Free Consult',
-    description: "Click “Book Your Free Consult” below to choose a time for your 15 minute consultation. You’ll get an email and text confirmation with your secure video link.",
+    title: 'Fill Out the Form',
+    description: "Start by filling out the short form with your name, email, and phone number. This lets me know you would like a free 15 minute consult, and I will personally follow up with you.",
     imageUrl:
       'https://pvbdrbaquwivhylsmagn.supabase.co/storage/v1/object/public/tst-assets/website%20assets/step_2.png',
     imageAlt: 'Illustration of a calendar',
@@ -86,8 +87,8 @@ export const howItWorksSteps = [
   },
   {
     number: '02',
-    title: 'Quick Check In',
-    description: "After you book, our Care Team will text you a short series of easy numbered questions (reply 1 or 2). It only takes a minute and helps me prepare for your consult.",
+    title: 'Gentle Check In',
+    description: "After I receive your form, I will send you a couple of simple questions to help me prepare for our time together. Answer only what feels comfortable. It should take just a minute.",
     imageUrl:
       'https://pvbdrbaquwivhylsmagn.supabase.co/storage/v1/object/public/tst-assets/website%20assets/step_1.png',
     imageAlt: 'Illustration of a cloud holding a phone',
@@ -112,3 +113,5 @@ export const howItWorksSteps = [
     isLastStep: true,
   },
 ];
+
+
