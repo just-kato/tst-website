@@ -11,7 +11,7 @@ export default function CTACard() {
   return (
     <div className="max-w-4xl mx-auto p-6 bg-white rounded-lg shadow-brutalistLg border-2 border-black">
       <h2 className="text-2xl md:text-3xl font-bold mb-4 text-center">
-        Pick a time → Quick intake → Free consult.
+        Fill out Form → Quick intake → Free consult.
       </h2>
       <h3 className="text-lg mb-8 text-center">
         First full session guaranteed, no charge if you choose not to move forward.

@@ -42,7 +42,7 @@ const getVariantContent = (variant: BookingPageHeaderProps['variant']) => {
       return {
         headline: (
           <>
-            When life feels heavy,<br className="hidden sm:block" /> here&apos;s a calm place to land
+            Free Consultation +<br className="hidden sm:block" /> Fit-or-Free First Session
           </>
         ),
         icon: <Heart className="w-6 h-6" />,

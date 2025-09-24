@@ -17,7 +17,9 @@ import {
   meetYourTherapistTrauma,
   meetYourTherapistND,
 } from '@/data/bookData';
+import {howItWorksSteps} from '@/data/pageData';
 import HowFitFreeWorksSteps from '@/components/HowFitFreeWorksSteps/HowFitFreeWorksSteps';
+import HowItWorksSteps from '@/components/HowItWorksSteps/HowItWorksSteps';
 import ProfileImage from '@/components/ProfileImage/ProfileImage';
 import FallingPillsBookingPage from '@/components/FallingPills/FallingPillsBookingPage';
 import TestimonialCardBooking from '@/components/TestimonialCardBooking/TestimonialCardBooking';
@@ -237,21 +239,31 @@ const AdditionalContent: React.FC<AdditionalContentProps> = ({
             </h3>
           </div>
           <div className="flex flex-col min-h-1000">
-            {howFitFreeWorksSteps.map((step, index) => {
+            {(variant === 'nd' ? howFitFreeWorksSteps : howItWorksSteps).map((step, index) => {
               const currentRef = stepRefs[index];
+              const stepsData = variant === 'nd' ? howFitFreeWorksSteps : howItWorksSteps;
               const nextStepInView =
-                index < howFitFreeWorksSteps.length - 1
+                index < stepsData.length - 1
                   ? stepInViewStates[index + 1]
                   : false;
 
               return (
                 <div key={index} ref={currentRef}>
-                  <HowFitFreeWorksSteps
-                    step={step}
-                    index={index}
-                    isLastStep={step.isLastStep}
-                    nextStepInView={nextStepInView}
-                  />
+                  {variant === 'nd' ? (
+                    <HowFitFreeWorksSteps
+                      step={step}
+                      index={index}
+                      isLastStep={step.isLastStep}
+                      nextStepInView={nextStepInView}
+                    />
+                  ) : (
+                    <HowItWorksSteps
+                      step={step}
+                      index={index}
+                      isLastStep={step.isLastStep}
+                      nextStepInView={nextStepInView}
+                    />
+                  )}
                 </div>
               );
             })}
@@ -321,7 +333,7 @@ const AdditionalContent: React.FC<AdditionalContentProps> = ({
         </h2>
         <div className="max-w-4xl w-full p-6 bg-white rounded-lg shadow-brutalistLg border-2 border-black text-center">
           <h2 className="text-2xl md:text-3xl font-bold mb-4">
-            Pick a time → Quick intake → Free consult.
+            {variant === 'nd' ? 'Pick a time → Quick intake → Free consult.' : 'Fill out form → Quick intake → Free consult.'}
           </h2>
           <h3 className="text-lg mb-8">
             First full session guaranteed, no charge if you choose not to move

@@ -23,26 +23,29 @@ const NavigationLink: React.FC<NavigationLinkProps> = ({
   const { setIsNavigating } = useNavigation();
 
   const handleClick = async (e: React.MouseEvent<HTMLAnchorElement>) => {
+    console.log('NavigationLink clicked - href:', href, 'pathname:', pathname);
+
     // Don't show loading if we're already on this page
     if (pathname === href) {
+      console.log('NavigationLink - already on this page, not showing loading');
       return;
     }
 
-    e.preventDefault();
+    // Don't show loading for external links
+    if (href.startsWith('http') || href.startsWith('mailto') || href.startsWith('tel')) {
+      console.log('NavigationLink - external link, not showing loading');
+      return;
+    }
+
+    // Show loading state - let Next.js Link handle the actual navigation
+    console.log('NavigationLink - setting isNavigating to true');
     setIsNavigating(true);
 
-    try {
-      router.push(href);
-      
-      // Set a timeout to hide loading after a reasonable time
-      // in case the navigation doesn't trigger the layout effect
-      setTimeout(() => {
-        setIsNavigating(false);
-      }, 3000);
-    } catch (error) {
+    // Fallback timeout only in case navigation fails completely
+    setTimeout(() => {
+      console.log('NavigationLink - fallback timeout reached, hiding loading');
       setIsNavigating(false);
-      console.error('Navigation error:', error);
-    }
+    }, 10000);
   };
 
   return (
