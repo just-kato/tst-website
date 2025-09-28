@@ -6,8 +6,8 @@ const FallingPillsBookingPage = () => {
   // Keywords that should have yellow background
   const yellowKeywords = [
     'Trauma & CPTSD',
-    'Neurodivergence Support', 
-    'LGBTQ+ Affirming',
+    'Neurodivergence Support',
+    'LGBTQIA+ Affirming',
     'BIPOC Affirming',
     'Racial Stress & Trauma',
     'Autism Spectrum',
@@ -31,7 +31,7 @@ const FallingPillsBookingPage = () => {
             style={{ animationDelay: `${index * 0.07}s` }}
           >
             <div className={styles.shadow}></div>
-            <div 
+            <div
               className={`${styles.pill} ${isYellowPill(keyword) ? styles.pillYellow : ''}`}
             >
               {keyword}

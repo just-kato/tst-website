@@ -7,10 +7,10 @@ import {
 
 export const helpWithKeywords = [
   'Anxiety & Overwhelm',
-  'Burnout & Exhaustion', 
+  'Burnout & Exhaustion',
   'Trauma & CPTSD',
   'Self-Esteem Issues',
-  'LGBTQ+ Affirming',
+  'LGBTQIA+ Affirming',
   'Relationship Challenges',
   'Neurodivergence Support',
   'Life Transitions',
