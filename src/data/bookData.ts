@@ -57,24 +57,24 @@ export const meetYourTherapistBook = {
   quote: undefined,
 };
 
-export const meetYourTherapistTrauma = {
-  title: `Your Guide on This Journey`,
+export const meetYourTherapistND = {
+  title: "Your Guide on This Journey",
   paragraphs: [
     "Kay, MS, LPC (she/they)",
-    'Georgia-licensed. Specialized in <strong>trauma-informed</strong> care for <strong>LGBTQ+, BIPOC, and neurodivergent</strong> adults navigating <strong>complex trauma, CPTSD, and healing from difficult life experiences</strong>.',
-    'Therapy that creates safety for your healing journey.',
+    "Georgia-licensed. I specialize in <strong>Neurodivergent-Affirming Therapy</strong>, with a focus on <strong>autism, ADHD, masking, and sensory challenges</strong>. I primarily support LGBTQIA+, BIPOC, and neurodivergent adults, and welcome anyone seeking a space to explore their neurotype.",
+    "My work is shaped by lived experience and the belief that <strong>therapy should honor the ways you think, feel, and process.</strong> I know it can be heavy to live in a world not built with your brain in mind, and I hold therapy as a space where that weight can be shared.",
   ],
-  quote: "Healing isn't about forgetting your past, it's about reclaiming your story.",
+  quote: "Support feels best when it fits your brain, not fights it.",
 };
 
-export const meetYourTherapistND = {
-  title: `Your Guide on This Journey`,
+export const meetYourTherapistTrauma = {
+  title: "Your Guide on This Journey",
   paragraphs: [
     "Kay, MS, LPC (she/they)",
-    'Georgia-licensed. Specialized in neurodivergent-affirming care for LGBTQ+, BIPOC, autistic adults, ADHDers, and those exploring their neurotype.',
-    'Therapy that celebrates how your brain works.',
+    "Georgia-licensed. Specialized in <strong>Integrative Somatic Trauma Therapy</strong> for adults navigating <strong>PTSD, CPTSD, and the lasting impact of painful experiences</strong>. I focus on supporting LGBTQIA+, BIPOC, and neurodivergent communities, and welcome anyone seeking a trauma-informed space to heal.",
+    "Integrative means my approach draws from  <strong>IFS (Internal Family Systems), Polyvagal Theory, Sensorimotor work, and Somatic Experiencing</strong>. This work centers on nervous system safety and relational trust. We’ll move at your pace, honoring both body and mind, so healing can unfold in ways that feel safe and possible for you.",
   ],
-  quote: "Your brain isn't broken, it's just wired beautifully different.",
+  quote: "Healing isn’t forgetting your past, it’s reclaiming your story.",
 };
 
 export const testimonials = [
