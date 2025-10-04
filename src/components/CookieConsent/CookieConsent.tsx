@@ -9,8 +9,10 @@ import Button from '@/components/Button/Button';
 const CookieConsent: React.FC = () => {
   const [showBanner, setShowBanner] = useState(false);
   const [showDetails, setShowDetails] = useState(false);
+  const [isMounted, setIsMounted] = useState(false);
 
   useEffect(() => {
+    setIsMounted(true);
     // Check if user has already made a choice
     const consent = Cookies.get('cookieConsent');
     if (!consent) {
@@ -55,7 +57,8 @@ const CookieConsent: React.FC = () => {
     setShowDetails(!showDetails);
   };
 
-  if (!showBanner) return null;
+  // Don't render anything on the server to prevent hydration mismatch
+  if (!isMounted || !showBanner) return null;
 
   return (
     <AnimatePresence>
@@ -138,13 +141,13 @@ const CookieConsent: React.FC = () => {
                     <div className="flex gap-2 justify-center md:justify-end">
                       <Button
                         onClick={handleRejectAll}
-                        className="bg-gray-200 text-black text-xs md:text-sm py-1.5 px-3 md:py-1.5 md:px-3 flex-1 md:flex-none"
+                        className="bg-gray-200 text-black text-xs md:text-sm py-1.5 px-2 md:py-1.5 md:px-3 flex-1 md:flex-none"
                       >
                         Reject All
                       </Button>
                       <Button
                         onClick={handleAcceptAll}
-                        className="bg-tst-purple text-black text-xs md:text-sm py-1.5 px-3 md:py-1.5 md:px-3 flex-1 md:flex-none"
+                        className="bg-tst-purple text-black text-xs md:text-sm py-1.5 px-2 md:py-1.5 md:px-3 flex-1 md:flex-none"
                       >
                         Accept All
                       </Button>
