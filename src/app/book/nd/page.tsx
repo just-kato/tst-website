@@ -1,7 +1,8 @@
 // src/app/book/nd/page.tsx
 import { Metadata } from 'next';
 import Section from '@/components/Section/Section';
-import UnifiedBookingFlow from '@/components/TwoStepBooking/UnifiedBookingFlow';
+import ContactForm from '@/components/Contact/ContactForm';
+import BookingPageHeader from '@/components/TwoStepBooking/BookingPageHeader';
 import AdditionalContent from '../AdditionalContent';
 
 export const metadata: Metadata = {
@@ -40,8 +41,9 @@ export default function NeurodivergentBookingPage() {
   return (
     <div>
       <Section className="min-h-screen bg-gray-50 py-20">
-        <div className="max-w-6xl mx-auto px-4">
-          <UnifiedBookingFlow variant="nd" />
+        <div className="max-w-6xl mx-auto px-4 space-y-8">
+          <BookingPageHeader variant="nd" />
+          <ContactForm variant="nd" />
         </div>
       </Section>
 

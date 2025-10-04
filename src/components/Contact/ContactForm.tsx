@@ -10,7 +10,7 @@ import { formatPhoneNumber } from '@/lib/validation';
 interface ContactFormProps {
   isContactPage?: boolean;
   id?: string;
-  variant?: 'trauma' | 'contact';
+  variant?: 'trauma' | 'contact' | 'nd';
 }
 
 const ContactForm: React.FC<ContactFormProps> = ({ isContactPage = false, variant = 'contact' }) => {
@@ -75,9 +75,9 @@ const ContactForm: React.FC<ContactFormProps> = ({ isContactPage = false, varian
       window.dataLayer = window.dataLayer || [];
       window.dataLayer.push({
         event: 'generate_lead_form_start',
-        page_source: variant === 'trauma' ? 'trauma_booking' : (isContactPage ? 'contact' : 'homepage'),
+        page_source: variant === 'trauma' ? 'trauma_booking' : variant === 'nd' ? 'nd_booking' : (isContactPage ? 'contact' : 'homepage'),
         form_location: window.location.pathname,
-        form_type: variant === 'trauma' ? 'trauma_booking' : (isContactPage ? 'contact' : 'homepage'),
+        form_type: variant === 'trauma' ? 'trauma_booking' : variant === 'nd' ? 'nd_booking' : (isContactPage ? 'contact' : 'homepage'),
         variant: variant,
       });
 

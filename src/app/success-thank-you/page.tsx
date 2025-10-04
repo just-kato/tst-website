@@ -64,7 +64,7 @@ export default function ThankYouPage() {
                     </div>
                   </div>
                   <div className="flex items-start gap-2">
-                    <div className="w-20 h-6 md:w-8 md:h-6 bg-tst-purple text-white rounded-full flex items-center justify-center text-sm font-bold mt-0.5">
+                    <div className="w-22 h-6 md:w-12 md:h-6 bg-tst-purple text-white rounded-full flex items-center justify-center text-sm font-bold mt-0.5">
                       2
                     </div>
                     <div>
