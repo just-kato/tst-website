@@ -42,7 +42,7 @@ const getVariantContent = (variant: BookingPageHeaderProps['variant']) => {
       return {
         headline: (
           <>
-            Somatic Trauma Therapy<br className="hidden sm:block" />That Honors Body and Mind
+            Somatic Trauma Therapy<br className="hidden sm:block" /> That Honors Body and Mind
           </>
         ),
         icon: <Heart className="w-6 h-6" />,

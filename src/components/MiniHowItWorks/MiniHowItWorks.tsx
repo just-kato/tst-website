@@ -137,7 +137,7 @@ const MiniHowItWorks: React.FC<MiniHowItWorksProps> = ({
               <span>Insurance reimbursements</span>
             </span>
           </div>
-          <h2 className="text-2xl md:text-5xl font-bold">
+          <h2 className="text-2xl md:text-5xl font-extrabold">
             How Superbills Work
           </h2>
           <p className="text-md md:text-xl">We make superbills easy</p>

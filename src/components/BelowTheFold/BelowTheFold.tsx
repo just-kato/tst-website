@@ -70,7 +70,7 @@ const BelowTheFold = () => {
 
   return (
     <>
-      <h2 className="text-4xl md:text-5xl font-extrabold mb-6 text-center pb-8">
+      <h2 className="text-4xl md:text-5xl font-extrabold mb-6 text-center md:pb-8">
         {heroContent.headline.title}
       </h2>
 
@@ -196,7 +196,7 @@ const BelowTheFold = () => {
           </motion.div>
 
           {/* Navigation arrows container */}
-          <div className="pt-8">
+          <div className="pt-4">
             <button
               onClick={prevCard}
               className="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-4 p-2 rounded-full border-2 border-black bg-white shadow-brutalist hover:bg-gray-50 transition-colors z-10"
