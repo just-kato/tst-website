@@ -50,8 +50,9 @@
   height: 100%;
   background-color: black;
   border-radius: 8px;
-  transform: translate(4px, 4px);
-  transition: transform 150ms ease-in-out;
+  box-shadow: 4px 4px black;
+  /* transform: translate(4px, 4px); */
+  /* transition: transform 150ms ease-in-out; */
 }
 
 .pill {

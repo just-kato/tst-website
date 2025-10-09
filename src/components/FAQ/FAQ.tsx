@@ -48,7 +48,7 @@ const FAQ = ({ pageUrl = '', customFaqs, className = '' }: FAQProps) => {
       />
 
       <div className={`w-full max-w-4xl mx-auto ${className}`} id="faq">
-        <h2 className="text-5xl font-extrabold text-center mb-8">
+        <h2 className="text-4xl md:text-5xl font-extrabold text-center mb-8">
           Answers to common questions
         </h2>
         <div className="flex flex-col gap-4">
