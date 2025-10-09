@@ -10,10 +10,12 @@ import { formatPhoneNumber } from '@/lib/validation';
 interface ContactFormProps {
   isContactPage?: boolean;
   id?: string;
-  variant?: 'trauma' | 'contact' | 'nd';
+  variant?: 'trauma' | 'contact' | 'nd' | 'affirming';
+  removeBackground?: boolean;
+  hideTitle?: boolean;
 }
 
-const ContactForm: React.FC<ContactFormProps> = ({ isContactPage = false, variant = 'contact' }) => {
+const ContactForm: React.FC<ContactFormProps> = ({ isContactPage = false, variant = 'contact', removeBackground = false, hideTitle = false }) => {
   const router = useRouter();
   const [formData, setFormData] = useState({ name: '', email: '', phone: '' });
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -72,14 +74,16 @@ const ContactForm: React.FC<ContactFormProps> = ({ isContactPage = false, varian
       }
 
       // Track the lead generation
-      window.dataLayer = window.dataLayer || [];
-      window.dataLayer.push({
-        event: 'generate_lead_form_start',
-        page_source: variant === 'trauma' ? 'trauma_booking' : variant === 'nd' ? 'nd_booking' : (isContactPage ? 'contact' : 'homepage'),
-        form_location: window.location.pathname,
-        form_type: variant === 'trauma' ? 'trauma_booking' : variant === 'nd' ? 'nd_booking' : (isContactPage ? 'contact' : 'homepage'),
-        variant: variant,
-      });
+      if (typeof window !== 'undefined') {
+        window.dataLayer = window.dataLayer || [];
+        window.dataLayer.push({
+          event: 'generate_lead_form_start',
+          page_source: variant === 'trauma' ? 'trauma_booking' : variant === 'nd' ? 'nd_booking' : variant === 'affirming' ? 'affirming_booking' : (isContactPage ? 'contact' : 'homepage'),
+          form_location: window.location.pathname,
+          form_type: variant === 'trauma' ? 'trauma_booking' : variant === 'nd' ? 'nd_booking' : variant === 'affirming' ? 'affirming_booking' : (isContactPage ? 'contact' : 'homepage'),
+          variant: variant,
+        });
+      }
 
       // Redirect to thank you page
       router.push('/success-thank-you');
@@ -92,11 +96,13 @@ const ContactForm: React.FC<ContactFormProps> = ({ isContactPage = false, varian
   };
 
   const handleEmailClick = () => {
-    window.location.href = `mailto:hello@example.com?subject=${encodeURIComponent(
-      'Follow-up on My Therapy Inquiry'
-    )}&body=${encodeURIComponent(
-      'Hi Kay,\n\nI’ve connected with you before and would like to follow up regarding scheduling or questions I have about starting therapy.\n\nMy details are:\n• Name:\n• Best contact number:\n• Preferred availability:\n• What I am interested in working on in therapy:\n• My budget:\n• My location (city/state):\n\nThank you, and I look forward to hearing from you.\n\nBest,\n[Your Name]'
-    )}`;
+    if (typeof window !== 'undefined') {
+      window.location.href = `mailto:hello@example.com?subject=${encodeURIComponent(
+        'Follow-up on My Therapy Inquiry'
+      )}&body=${encodeURIComponent(
+        `Hi Kay,\n\nI've connected with you before and would like to follow up regarding scheduling or questions I have about starting therapy.\n\nMy details are:\n• Name:\n• Best contact number:\n• Preferred availability:\n• What I am interested in working on in therapy:\n• My budget:\n• My location (city/state):\n\nThank you, and I look forward to hearing from you.\n\nBest,\n[Your Name]`
+      )}`;
+    }
   };
   const renderContactExistsMessage = () => {
     return (
@@ -127,14 +133,16 @@ const ContactForm: React.FC<ContactFormProps> = ({ isContactPage = false, varian
   };
 
   return (
-    <div className="relative bg-white p-12 rounded-xl border-2 border-black shadow-brutalistLg max-w-5xl mx-auto">
+    <div className={`relative max-w-5xl mx-auto ${removeBackground ? 'bg-white p-12 rounded-xl border-2 border-black shadow-brutalistLg md:bg-transparent md:p-0 md:rounded-none md:border-none md:shadow-none' : 'bg-white p-12 rounded-xl border-2 border-black shadow-brutalistLg'}`}>
       {contactExists ? (
         renderContactExistsMessage()
       ) : (
         <div className="max-w-4xl mx-auto text-center">
-          <h2 className="text-4xl md:text-5xl font-extrabold mb-10">
-            Reach out to start therapy.
-          </h2>
+          {!hideTitle && (
+            <h2 className="text-3xl md:text-5xl font-extrabold mb-10">
+              Reach out to start therapy.
+            </h2>
+          )}
 
           <form id="contact-form" onSubmit={handleSubmit}>
             <div className="flex flex-col gap-8">

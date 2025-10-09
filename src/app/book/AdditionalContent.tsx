@@ -28,6 +28,7 @@ import CountUp from '@/components/CountUp/CountUp';
 import MiniHowItWorks from '@/components/MiniHowItWorks/MiniHowItWorks';
 import { MoonStar } from 'lucide-react';
 import BelowTheFold from '@/components/BelowTheFold/BelowTheFold';
+import ContactForm from '@/components/Contact/ContactForm';
 
 interface AdditionalContentProps {
   variant?: 'trauma' | 'affirming' | 'nd';
@@ -266,7 +267,7 @@ const AdditionalContent: React.FC<AdditionalContentProps> = ({
 
       </Section>
       <Section paddingBottom="large">
-        <div className="h-120 mx-auto mt-24 bg-white rounded-lg shadow-brutalistLg border-2 border-black p-8 overflow-hidden">
+        <div className="h-120 mx-auto bg-white rounded-lg shadow-brutalistLg border-2 border-black p-8 overflow-hidden">
           <div className="grid md:grid-cols-2 md:gap-8 items-center h-full">
             <div className="flex flex-col justify-center items-center md:items-start text-center md:text-left md:max-w-600 md:pl-4">
               <div className="flex flex-col items-center md:items-start mb-2 md:mb-10">
@@ -315,24 +316,28 @@ const AdditionalContent: React.FC<AdditionalContentProps> = ({
           </div>
         </div>
       </Section>
-      <Section className="bg-tst-green border-t-2 border-b-2 border-black flex flex-col items-center justify-center">
-        <h2 className="text-4xl md:text-6xl font-bold mb-8 text-center mt-10">
-          Ready to start feeling better?
-        </h2>
-        <div className="max-w-4xl w-full p-6 bg-white rounded-lg shadow-brutalistLg border-2 border-black text-center">
-          <h2 className="text-2xl md:text-3xl font-bold mb-4">
-            Fill out form → Quick intake → Free consult.
-          </h2>
-          <h3 className="text-lg mb-8">
-            First full session guaranteed, no charge if you choose not to move
-            forward.
-          </h3>
-          <Button
-            onClick={() => window.scrollTo({ top: 650, behavior: 'smooth' })}
-            className="bg-tst-purple w-full sm:w-auto mx-auto"
-          >
-            Book Your Free 15-min Consult
-          </Button>
+      <Section className="bg-tst-green border-t-2 border-b-2 border-black">
+        <h2 className="text-4xl md:text-5xl font-extrabold text-center">
+              Ready to start feeling better?
+            </h2>
+        <div className="grid md:grid-cols-2 gap-4 md:gap-6 items-center md:min-h-[600px]">
+
+          {/* Left side - Header and Image */}
+          <div className="flex flex-col items-center justify-center md:justify-end text-center space-y-2  max-h-80 md:max-h-full md:space-y-6">
+
+            <Image
+              src="https://pvbdrbaquwivhylsmagn.supabase.co/storage/v1/object/public/tst-assets/website%20assets/Services%20Page%20Asset.svg"
+              alt="Services illustration"
+              width={500}
+              height={500}
+              // className="w-full h-auto"
+            />
+          </div>
+
+          {/* Right side - Contact Form */}
+          <div className="flex flex-col justify-center md:justify-start">
+            <ContactForm variant={variant} removeBackground={true} hideTitle={true} />
+          </div>
         </div>
       </Section>
       <Section>
