@@ -190,7 +190,7 @@ const TRUST_INDICATORS = [
                 className="bg-white"
                 id="download-free-guides-btn"
               >
-                See How It Works
+                See How Getting Started Works
               </Button>
             </motion.div>
             <motion.div

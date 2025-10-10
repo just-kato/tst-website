@@ -94,6 +94,9 @@ module.exports = {
           'sans-serif',
         ],
       },
+      fontSize: {
+        '2.35': '2.35rem',
+      },
       boxShadow: {
         brutalistXs: '2px 3px 0 #000',
         brutalistSm: '3px 3px 0 #000',
@@ -124,6 +127,7 @@ module.exports = {
         10: '10rem',
         12: '12rem',
         80: '20rem',
+        85: '22rem',
         90: '24rem',
         100: '28rem',
         110: '30rem',

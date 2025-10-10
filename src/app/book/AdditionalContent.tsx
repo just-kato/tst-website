@@ -317,28 +317,73 @@ const AdditionalContent: React.FC<AdditionalContentProps> = ({
         </div>
       </Section>
       <Section className="bg-tst-green border-t-2 border-b-2 border-black">
-        <h2 className="text-4xl md:text-5xl font-extrabold text-center">
+        <motion.div
+          className="max-w-6xl mx-auto"
+          variants={sectionVariants}
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: true, amount: 0.2 }}
+        >
+          {/* Enhanced Header Section */}
+          <motion.div
+            className="text-center mb-12 md:mb-16"
+            variants={itemVariants}
+          >
+            <div className="inline-block bg-tst-purple text-white px-6 py-3 rounded-full border-2 border-black shadow-brutalist mb-6">
+              <span className="text-sm md:text-base font-bold uppercase tracking-wide">Take the first step</span>
+            </div>
+            <h2 className="text-4xl md:text-6xl font-extrabold mb-6 leading-tight">
               Ready to start feeling better?
             </h2>
-        <div className="grid md:grid-cols-2 gap-4 md:gap-6 items-center md:min-h-[600px]">
+            <p className="text-lg md:text-xl text-gray-800 max-w-3xl mx-auto font-medium">
+              Your healing journey begins with a single conversation. Let's connect and see how therapy can support you.
+            </p>
+          </motion.div>
 
-          {/* Left side - Header and Image */}
-          <div className="flex flex-col items-center justify-center md:justify-end text-center space-y-2  max-h-80 md:max-h-full md:space-y-6">
+          <div className="grid lg:grid-cols-2 gap-8 md:gap-12 items-center">
+            <motion.div
+              className="flex flex-col items-center justify-center text-center space-y-8 h-full"
+              variants={itemVariants}
+            >
+              <div className="relative w-full max-w-md mx-auto">
+                <div className="relative bg-tst-yellow p-4 rounded-2xl border-2 border-black shadow-brutalist">
+                  <Image
+                    src="https://pvbdrbaquwivhylsmagn.supabase.co/storage/v1/object/public/tst-assets/website%20assets/Services%20Page%20Asset.svg"
+                    alt="Services illustration"
+                    width={400}
+                    height={400}
+                    className="w-full h-full max-w-xs mx-auto object-contain"
+                  />
+                </div>
+              </div>
 
-            <Image
-              src="https://pvbdrbaquwivhylsmagn.supabase.co/storage/v1/object/public/tst-assets/website%20assets/Services%20Page%20Asset.svg"
-              alt="Services illustration"
-              width={500}
-              height={500}
-              // className="w-full h-auto"
-            />
+              {/* Trust indicators */}
+              <div className="grid grid-cols-2 gap-4 w-full max-w-md">
+                <div className="bg-white p-4 rounded-xl border-2 border-black shadow-brutalist text-center">
+                  <div className="text-2xl font-bold text-tst-purple">15 min</div>
+                  <div className="text-sm font-medium">Free consultation</div>
+                </div>
+                <div className="bg-white p-4 rounded-xl border-2 border-black shadow-brutalist text-center">
+                  <div className="text-2xl font-bold text-tst-teal">✓</div>
+                  <div className="text-sm font-medium">Licensed therapist</div>
+                </div>
+              </div>
+            </motion.div>
+
+            {/* Right side - Enhanced Contact Form */}
+            <motion.div
+              className="flex flex-col justify-center"
+              variants={itemVariants}
+            >
+
+                <ContactForm
+                  variant={variant}
+                  header="Let's connect"
+                  subheader="Share your details and I'll reach out within 24 hours"
+                />
+            </motion.div>
           </div>
-
-          {/* Right side - Contact Form */}
-          <div className="flex flex-col justify-center md:justify-start">
-            <ContactForm variant={variant} removeBackground={true} hideTitle={true} />
-          </div>
-        </div>
+        </motion.div>
       </Section>
       <Section>
         <FAQ

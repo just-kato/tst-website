@@ -137,12 +137,12 @@ const BusinessQueriesPage: React.FC = () => {
               For Business Queries Only
             </h1>
 
-            <div className="mb-8 p-4 bg-tst-yellow border-2 border-black rounded-lg">
+            <div className="mb-8 p-4  rounded-lg">
               <p className="text-lg font-medium">
                 For therapy, please{' '}
                 <Link
                   href="/book/trauma"
-                  className="underline text-black hover:text-tst-purple font-bold transition-colors"
+                  className="underline text-tst-purple hover:text-tst-purple font-bold transition-colors"
                 >
                   book a consultation here
                 </Link>
