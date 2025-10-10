@@ -30,6 +30,7 @@ const getVariantContent = (variant: BookingPageHeaderProps['variant']) => {
         icon: <Brain className="w-6 h-6" />,
         color: 'bg-purple-100 border-black text-purple-800',
         tagText: 'Neurodivergent-Friendly',
+        subHeadline: 'Care that honors how you think, feel, and move through the world.',
       };
     case 'affirming':
       return {
@@ -37,17 +38,19 @@ const getVariantContent = (variant: BookingPageHeaderProps['variant']) => {
         icon: <Rainbow className="w-6 h-6" />,
         color: 'bg-pink-100 border-black text-pink-800',
         tagText: 'LGBTQIA-Affirming',
+        subHeadline: 'All of you is welcome here',
       };
     case 'trauma':
       return {
         headline: (
           <>
-            Somatic Trauma Therapy<br className="hidden sm:block" /> That Honors Body and Mind
+            Somatic Trauma Therapy That Honors Body and Mind
           </>
         ),
         icon: <Heart className="w-6 h-6" />,
         color: 'bg-blue-100 border-black text-blue-800',
         tagText: 'Trauma-Informed',
+        subHeadline: 'Care that help your body and mind reconnect after trauma.',
       };
   }
 };
@@ -59,10 +62,8 @@ const BookingPageHeader: React.FC<BookingPageHeaderProps> = ({ variant }) => {
     <div className="space-y-12">
       {/* Hero Section */}
       <div className="text-center space-y-6">
-
-
-          <Button
-          className={`font-medium rounded-full ${content.color}`}
+ <Button
+          className={`font-small md:font-medium text-sm md:text-base px-4 py-2 md:px-6 md:py-3 rounded-full ${content.color}`}
           variant="rounded-full"
           onClick={() => {
             const element = document.getElementById('fit-free-works-section');
@@ -73,12 +74,14 @@ const BookingPageHeader: React.FC<BookingPageHeaderProps> = ({ variant }) => {
           >
             <span className="flex items-center gap-2">
               {content.icon}
-              <span>See How Fit-or-Free Works</span>
+              <span>See The Process</span>
             </span>
           </Button>
 
+
+
         <motion.h1
-          className="text-3xl md:text-5xl font-extrabold leading-tight px-4"
+          className="text-2.35 md:text-5xl font-extrabold leading-tight px-4"
           variants={itemVariants}
         >
           {content.headline}
@@ -87,12 +90,15 @@ const BookingPageHeader: React.FC<BookingPageHeaderProps> = ({ variant }) => {
           className="text-base sm:text-lg md:text-xl text-gray-600 max-w-3xl mx-auto px-4 leading-relaxed"
           variants={itemVariants}
         >
+                              <span className="font-bold">{content.subHeadline} </span>
+ <br className="hidden sm:block" />
           Licensed virtual therapy for Georgia adults.
-          <span className="font-bold"> Free 15‑minute consult.</span>
-          <br className=" sm:block" />
-          <span className="font-bold">Your first full session is  <br className=" md:hidden" />free if it's not a fit.</span>
-          <br className=" sm:block" />
-          Book below with <span className="font-bold">zero risk.</span>
+          <span> Start with a </span>
+          <span className="font-bold">free 15-minute consult </span>
+          and see how the process works.
+          {/* <br className=" sm:block" /> */}
+
+
         </motion.h3>
       </div>
 

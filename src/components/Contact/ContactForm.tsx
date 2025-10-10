@@ -11,11 +11,12 @@ interface ContactFormProps {
   isContactPage?: boolean;
   id?: string;
   variant?: 'trauma' | 'contact' | 'nd' | 'affirming';
-  removeBackground?: boolean;
-  hideTitle?: boolean;
+  maxHeight?: string;
+  header?: string;
+  subheader?: string;
 }
 
-const ContactForm: React.FC<ContactFormProps> = ({ isContactPage = false, variant = 'contact', removeBackground = false, hideTitle = false }) => {
+const ContactForm: React.FC<ContactFormProps> = ({ isContactPage = false, variant = 'contact', maxHeight, header, subheader }) => {
   const router = useRouter();
   const [formData, setFormData] = useState({ name: '', email: '', phone: '' });
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -104,6 +105,31 @@ const ContactForm: React.FC<ContactFormProps> = ({ isContactPage = false, varian
       )}`;
     }
   };
+  const getVariantContent = () => {
+    switch (variant) {
+      case 'trauma':
+        return {
+          header: `Let's connect`,
+          subheader: 'I’ll reach out personally to schedule your consult, and support you through the first step.'
+        };
+      case 'nd':
+        return {
+          header: `Let's connect`,
+          subheader: 'I’ll reach out to help you get started, and keep the process simple and clear.'
+        };
+      case 'affirming':
+        return {
+          header: 'Ready for affirming therapy?',
+          subheader: 'Connect with LGBTQIA+ affirming therapy that celebrates you'
+        };
+      case 'contact':
+      default:
+        return {
+          header: `Let's connect`,
+          subheader: 'Connect with compassionate, personalized care'
+        };
+    }
+  };
   const renderContactExistsMessage = () => {
     return (
       <div className="bg-yellow-50 border-2 border-yellow-300 rounded-lg p-6 text-center">
@@ -133,16 +159,15 @@ const ContactForm: React.FC<ContactFormProps> = ({ isContactPage = false, varian
   };
 
   return (
-    <div className={`relative max-w-5xl mx-auto ${removeBackground ? 'bg-white p-12 rounded-xl border-2 border-black shadow-brutalistLg md:bg-transparent md:p-0 md:rounded-none md:border-none md:shadow-none' : 'bg-white p-12 rounded-xl border-2 border-black shadow-brutalistLg'}`}>
+    <div className={`relative max-w-5xl mx-auto bg-white p-12 rounded-xl border-2 border-black shadow-brutalistLg ${maxHeight ? `max-h-${maxHeight}` : ''}`}>
       {contactExists ? (
         renderContactExistsMessage()
       ) : (
         <div className="max-w-4xl mx-auto text-center">
-          {!hideTitle && (
-            <h2 className="text-3xl md:text-5xl font-extrabold mb-10">
-              Reach out to start therapy.
+            <h2 className="text-3xl md:text-4xl font-extrabold ">
+              {header !== undefined ? header : getVariantContent().header}
             </h2>
-          )}
+            <p className="mb-10">{subheader !== undefined ? subheader : getVariantContent().subheader}</p>
 
           <form id="contact-form" onSubmit={handleSubmit}>
             <div className="flex flex-col gap-8">
