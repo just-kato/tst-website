@@ -6,7 +6,7 @@ import BookingPageHeader from '@/components/TwoStepBooking/BookingPageHeader';
 import AdditionalContent from '../AdditionalContent';
 
 export const metadata: Metadata = {
-  title: 'Fit-or-Free Sessions',
+  title: 'Therapy for Neurodivergent Adults',
   description:
     'Free 15-minute consultation designed specifically for neurodivergent adults. If your first session isn\'t a good fit, it\'s completely free. Get practical, sensory-aware coping strategies that work with your brain. Licensed therapist in Georgia.',
   keywords: [
@@ -22,7 +22,7 @@ export const metadata: Metadata = {
     'free consultation',
   ],
   openGraph: {
-    title: 'Fit-or-Free Sessions',
+    title: 'Therapy for Neurodivergent Adults',
     description:
       'Practical, sensory-aware coping strategies designed for neurodivergent brains. Free 15-minute consultation with Georgia-licensed therapist, plus fit-or-free therapy sessions.',
     type: 'website',
