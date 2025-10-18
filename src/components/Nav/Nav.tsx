@@ -112,8 +112,8 @@ const Nav: React.FC = () => {
           </NavigationLink>
         </div>
 
-        <div className="hidden md:flex items-center space-x-8">
-          <ul className="flex items-center space-x-3 font-bold">
+        <div className="hidden lg:flex items-center space-x-4 xl:space-x-8">
+          <ul className="flex items-center space-x-2 xl:space-x-3 font-bold">
             {!isDashboardPage && (
               <>
                 <li>
@@ -163,7 +163,7 @@ const Nav: React.FC = () => {
           )}
         </div>
 
-        <div className="md:hidden">
+        <div className="lg:hidden">
           <MenuToggle
             isOpen={isMenuOpen}
             onClick={() => setIsMenuOpen(!isMenuOpen)}
