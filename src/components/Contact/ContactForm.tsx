@@ -98,7 +98,7 @@ const ContactForm: React.FC<ContactFormProps> = ({ isContactPage = false, varian
 
   const handleEmailClick = () => {
     if (typeof window !== 'undefined') {
-      window.location.href = `mailto:hello@care@toastedsesametherapy.com?subject=${encodeURIComponent(
+      window.location.href = `mailto:care@toastedsesametherapy.com?subject=${encodeURIComponent(
         'Follow-up on My Therapy Inquiry'
       )}&body=${encodeURIComponent(
         `Hi Kay,\n\nI've connected with you before and would like to follow up regarding scheduling or questions I have about starting therapy.\n\nMy details are:\n• Name:\n• Best contact number:\n• Preferred availability:\n• What I am interested in working on in therapy:\n• My budget:\n• My location (city/state):\n\nThank you, and I look forward to hearing from you.\n\nBest,\n[Your Name]`
