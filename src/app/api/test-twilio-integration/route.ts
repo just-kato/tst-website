@@ -7,7 +7,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { sendSMS, parseIncomingMessage } from '@/lib/twilio/client';
 import { processWebhook } from '@/lib/twilio/webhook-processor';
 import { trackMessageDelivery, getDeliveryMetrics } from '@/lib/twilio/delivery-tracking';
-import { triggerContactCreatedWorkflow, processAutomatedWorkflows } from '@/lib/twilio/workflow-triggers';
+// Workflow triggers removed - cron jobs have been gutted
 import { initializeDefaultSMSTemplates } from '@/lib/sms/workflows';
 import { initializeConversationServer, getConversationStateServer } from '@/lib/conversations/flow-manager-server';
 import { getQuickResponseButtons } from '@/lib/conversations/flow-manager';
@@ -45,7 +45,11 @@ export async function POST(request: NextRequest) {
         return await testDeliveryTracking(testData);
       
       case 'workflow_triggers':
-        return await testWorkflowTriggers(testData);
+        return NextResponse.json({
+          success: false,
+          error: 'Workflow triggers have been removed - cron jobs were gutted',
+          timestamp: new Date().toISOString(),
+        });
       
       case 'initialize_templates':
         return await testInitializeTemplates();
@@ -209,67 +213,7 @@ async function testDeliveryTracking(data: any): Promise<NextResponse> {
   }
 }
 
-/**
- * Test workflow triggers
- */
-async function testWorkflowTriggers(data: any): Promise<NextResponse> {
-  try {
-    const { testContactId, appointmentDateTime } = data;
-    
-    console.log('Testing workflow triggers');
-    
-    let contactId = testContactId;
-    
-    // Create a test contact if none provided
-    if (!contactId) {
-      const { data: contact, error } = await supabase
-        .from('contacts')
-        .insert([
-          {
-            name: 'Test Contact',
-            email: 'test@example.com',
-            phone_number: '+15551234567',
-            contact_status: 'ACTIVE',
-          },
-        ])
-        .select()
-        .single();
-      
-      if (error) {
-        throw error;
-      }
-      
-      contactId = contact.id;
-    }
-    
-    // Test contact created workflow
-    const workflowResult = await triggerContactCreatedWorkflow(
-      contactId,
-      appointmentDateTime || new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString()
-    );
-    
-    // Test automated workflow processing
-    const automatedResult = await processAutomatedWorkflows();
-    
-    return NextResponse.json({
-      success: true,
-      testType: 'workflow_triggers',
-      result: {
-        contactCreatedWorkflow: workflowResult,
-        automatedWorkflows: automatedResult,
-        testContactId: contactId,
-      },
-      timestamp: new Date().toISOString(),
-    });
-  } catch (error) {
-    return NextResponse.json({
-      success: false,
-      testType: 'workflow_triggers',
-      error: (error as Error).message,
-      timestamp: new Date().toISOString(),
-    });
-  }
-}
+// testWorkflowTriggers function removed - workflow triggers have been gutted
 
 /**
  * Test template initialization
@@ -433,16 +377,12 @@ async function runComprehensiveTest(data: any): Promise<NextResponse> {
       results.errors.push(`Webhook processing failed: ${(error as Error).message}`);
     }
     
-    // 5. Test workflow triggers
-    try {
-      const workflowResult = await testWorkflowTriggers({
-        appointmentDateTime: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(),
-      });
-      const workflowData = await workflowResult.json();
-      results.tests.workflows = workflowData;
-    } catch (error) {
-      results.errors.push(`Workflow triggers failed: ${(error as Error).message}`);
-    }
+    // 5. Workflow triggers skipped - cron jobs have been gutted
+    results.tests.workflows = {
+      success: false,
+      message: 'Workflow triggers have been removed - cron jobs were gutted',
+      skipped: true,
+    };
     
     results.endTime = new Date().toISOString();
     results.success = results.errors.length === 0;
