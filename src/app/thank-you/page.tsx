@@ -38,10 +38,10 @@ export default function ThankYouPage() {
           <div className="p-8 border-b-2 border-black bg-tst-purple">
             <CheckCircle className="w-10 h-10 mx-auto mb-4 text-white" />
             <h1 className="text-2xl md:text-3xl font-bold text-white mb-2">
-              Consultation Booked!
+              Form Submitted Successfully!
             </h1>
             <p className="text-white/90 text-sm md:text-lg">
-              You're all set. We're excited to meet you.
+              Thanks for reaching out. We'll be in touch with next steps soon.
             </p>
           </div>
 
@@ -54,31 +54,31 @@ export default function ThankYouPage() {
                   What Happens Next
                 </h2>
                 <div className="space-y-4 text-left">
-                  <div className="flex items-start gap-2">
-                    <div className="w-20 h-6 md:w-8 md:h-6 bg-tst-purple text-white rounded-full flex items-center justify-center text-sm font-bold mt-0.5">
+                  <div className="flex items-start gap-3">
+                    <div className="w-8 h-8 bg-tst-purple text-white rounded-full flex items-center justify-center text-sm font-bold flex-shrink-0">
                       1
                     </div>
-                    <div>
-                      <p className="font-semibold">Check Your Email</p>
-                      <p className="text-gray-600">You'll receive a confirmation with your secure video link and appointment details.</p>
+                    <div className="text-left">
+                      <p className="font-semibold text-left">Watch for My Email</p>
+                      <p className="text-gray-600 text-left">You'll receive a confirmation with your secure video link and appointment details.</p>
                     </div>
                   </div>
-                  <div className="flex items-start gap-2">
-                    <div className="w-20 h-6 md:w-8 md:h-6 bg-tst-purple text-white rounded-full flex items-center justify-center text-sm font-bold mt-0.5">
+                  <div className="flex items-start gap-3">
+                    <div className="w-8 h-8 bg-tst-purple text-white rounded-full flex items-center justify-center text-sm font-bold flex-shrink-0">
                       2
                     </div>
-                    <div>
-                      <p className="font-semibold">Quick Check-In</p>
-                      <p className="text-gray-600">Our Care Team will text you a short series of questions to help prepare for your consult.</p>
+                    <div className="text-left">
+                      <p className="font-semibold text-left">Quick Check-In</p>
+                      <p className="text-gray-600 text-left">I'll personally reply to the information you shared. You'll hear from me soon with next steps for your free 15 minute consult.</p>
                     </div>
                   </div>
-                  <div className="flex items-start gap-2">
-                    <div className="w-24 h-6 md:w-10 md:h-6 bg-tst-purple text-white rounded-full flex items-center justify-center text-sm font-bold mt-0.5">
+                  <div className="flex items-start gap-3">
+                    <div className="w-8 h-8 bg-tst-purple text-white rounded-full flex items-center justify-center text-sm font-bold flex-shrink-0">
                       3
                     </div>
-                    <div>
-                      <p className="font-semibold">Meet Your Therapist</p>
-                      <p className="text-gray-600">Join your 15-minute consultation to share what's on your mind and see how therapy could support you.</p>
+                    <div className="text-left">
+                      <p className="font-semibold text-left">Meet Your Therapist</p>
+                      <p className="text-gray-600 text-left">Join your 15-minute consultation to share what's on your mind and see how therapy could support you.</p>
                     </div>
                   </div>
                 </div>
