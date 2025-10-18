@@ -34,7 +34,7 @@ const MobileMenu: React.FC<MobileMenuProps> = ({ onClose }) => {
       animate={{ y: '0%', opacity: 1 }}
       exit={{ y: '-100%', opacity: 0 }}
       transition={{ duration: 0.4, ease: 'easeInOut' }}
-      className="fixed inset-0 bg-tst-cream md:hidden z-40"
+      className="fixed inset-0 bg-tst-cream lg:hidden z-40"
     >
       {/* Background overlay */}
       <div className="absolute inset-0 bg-tst-cream" />
@@ -86,8 +86,8 @@ const MobileMenu: React.FC<MobileMenuProps> = ({ onClose }) => {
               </li>
               <li>
                 <a
-                  href="#contact-form"
-                  onClick={handleBookConsultationClick}
+                  href="/book/trauma"
+                  onClick={onClose}
                   className="text-white hover:text-tst-yellow transition-colors"
                 >
                   Book a Free 15-min Consultation
