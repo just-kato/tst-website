@@ -16,18 +16,7 @@ test.describe('Contact Form Flow Smoke Tests', () => {
     expect(hasNameField && hasEmailField && hasMessageField && hasSubmitButton).toBeTruthy();
   });
 
-  test('business queries page renders', async ({ page }) => {
-    await page.goto('/business-queries');
-    
-    await expect(page.locator('body')).toBeVisible();
-    
-    // Should have business-specific form or content
-    const hasBusinessForm = await page.locator('form').isVisible();
-    const hasBusinessContent = await page.getByText(/business|professional|inquiry/i).isVisible();
-    const hasContactInfo = await page.locator('[data-testid*="contact"]').isVisible();
-    
-    expect(hasBusinessForm || hasBusinessContent || hasContactInfo).toBeTruthy();
-  });
+  // Business queries test removed - now handled via mailto link in footer
 
   test('contact form has proper validation', async ({ page }) => {
     await page.goto('/contact');
