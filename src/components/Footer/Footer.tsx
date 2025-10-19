@@ -79,9 +79,10 @@ const Footer = () => {
                     Contact
                   </HoverLink>
                 </li>
+                
                 <li>
                   <HoverLink
-                    href="/business-queries"
+                    href="mailto:care@toastedsesametherapy.com?subject=Business Inquiry"
                     className="text-white/90 hover:text-white transition-colors font-medium"
                   >
                     Business Queries

@@ -44,8 +44,8 @@
     },
     {
       "name": "Contact form submission",
-      "paths": ["/contact", "/business-queries"],
-      "apis": ["/api/graphql", "/api/business-query"],
+      "paths": ["/contact"],
+      "apis": ["/api/graphql"],
       "data": ["contacts", "conversations"],
       "notifications": ["email:Resend"],
       "tests": ["tests/smoke/contact.spec.ts"]
