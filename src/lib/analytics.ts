@@ -31,7 +31,10 @@ export const trackEvent = async (
 
   const gtagReady = await waitForGtag();
   if (!gtagReady) {
-    console.warn('⚠️ gtag not ready, event not sent:', eventName);
+    // Only log analytics warnings in development when explicitly debugging
+    if (process.env.NODE_ENV === 'development' && process.env.DEBUG_ANALYTICS === 'true') {
+      console.warn('⚠️ gtag not ready, event not sent:', eventName);
+    }
     return;
   }
 
@@ -40,8 +43,16 @@ export const trackEvent = async (
       debug_mode: process.env.NODE_ENV === 'development',
       ...parameters,
     });
+
+    // Only log successful events in debug mode
+    if (process.env.NODE_ENV === 'development' && process.env.DEBUG_ANALYTICS === 'true') {
+      console.log('📊 Analytics event:', eventName, parameters);
+    }
   } catch (error) {
-    console.error('❌ GA4 event failed:', eventName, error);
+    // Always log errors, but make them less noisy
+    if (process.env.NODE_ENV === 'development') {
+      console.error('Analytics error:', eventName, error);
+    }
   }
 };
 

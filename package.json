@@ -30,6 +30,7 @@
     "@apollo/experimental-nextjs-app-support": "^0.13.0",
     "@apollo/server": "^5.0.0",
     "@as-integrations/next": "^4.0.0",
+    "@botpoison/browser": "^0.1.30",
     "@dotlottie/player-component": "^2.7.12",
     "@hello-pangea/dnd": "^18.0.1",
     "@mailchimp/mailchimp_marketing": "^3.0.80",
