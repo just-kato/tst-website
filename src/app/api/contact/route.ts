@@ -49,52 +49,20 @@ export async function POST(request: NextRequest) {
     const devBypass = process.env.BOTPOISON_DEV_BYPASS === 'true';
     const emergencyDisable = process.env.BOTPOISON_EMERGENCY_DISABLE === 'true';
 
-    // Check for obvious bot indicators first (needed for review flagging later)
+    // Enhanced bot detection with stronger patterns
     const suspiciousIndicators = [
       !userAgent || userAgent.includes('bot') || userAgent.includes('crawler'),
       !submissionTime || (Date.now() - submissionTime) > 300000, // Older than 5 minutes
       name.toLowerCase().includes('bot') || email.toLowerCase().includes('bot'),
+      // Check for random string patterns in names (like the bots we found)
+      /^[A-Za-z]{15,}$/.test(name) && !/\s/.test(name), // Long names without spaces
+      // Check for suspicious email patterns
+      email.toLowerCase().includes('test') || email.toLowerCase().includes('spam'),
+      // Check for submission timing that's too fast
+      submissionTime && (Date.now() - submissionTime) < 1000, // Less than 1 second
     ];
 
     const suspiciousCount = suspiciousIndicators.filter(Boolean).length;
-
-    if (emergencyDisable) {
-      console.log('🚨 Emergency disable active - skipping all bot protection');
-    } else if (isDev && devBypass && botpoison === 'dev-bypass-token') {
-      console.log('🚧 Development bypass used - skipping botpoison verification');
-    } else {
-
-      if (botpoison) {
-        // If we have a botpoison token, verify it
-        const isVerified = await verifyBotpoison(botpoison);
-        if (!isVerified) {
-          console.log('Botpoison verification failed - checking other indicators');
-
-          // If botpoison fails but user seems legitimate, allow with warning
-          if (suspiciousCount === 0 && userAgent && submissionTime) {
-            console.log('⚠️  Botpoison failed but user appears legitimate - allowing with warning');
-            // Continue to create contact but flag for review
-          } else {
-            return NextResponse.json(
-              { error: 'Security verification failed. Please try again or contact us directly.' },
-              { status: 400 }
-            );
-          }
-        }
-      } else {
-        // No botpoison token - check other indicators
-        if (suspiciousCount >= 2) {
-          console.log('No botpoison token and multiple suspicious indicators detected');
-          return NextResponse.json(
-            { error: 'Security verification required. Please enable JavaScript and try again.' },
-            { status: 400 }
-          );
-        } else if (suspiciousCount >= 1) {
-          console.log('⚠️  No botpoison but some suspicious indicators - allowing with warning');
-          // Continue but flag for review
-        }
-      }
-    }
 
     // Check for existing contact
     const { data: existingContact, error: checkError } = await supabase
@@ -121,9 +89,44 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // Verify botpoison and determine security status
+    let botpoisonVerified = false;
+    let securityStatus = 'unverified';
+
+    if (emergencyDisable) {
+      securityStatus = 'emergency_disabled';
+    } else if (isDev && devBypass && botpoison === 'dev-bypass-token') {
+      securityStatus = 'dev_bypass';
+    } else if (botpoison) {
+      // Actually verify the botpoison solution
+      botpoisonVerified = await verifyBotpoison(botpoison);
+      if (botpoisonVerified) {
+        securityStatus = 'verified';
+      }
+    }
+
+    // Strict enforcement: Block unverified submissions unless in dev/emergency mode
+    if (!emergencyDisable && !(isDev && devBypass && botpoison === 'dev-bypass-token')) {
+      if (!botpoisonVerified) {
+        console.log('🚫 Botpoison verification required but failed/missing');
+        return NextResponse.json(
+          { error: 'Security verification failed. Please ensure JavaScript is enabled and try again.' },
+          { status: 400 }
+        );
+      }
+
+      // Also block obviously suspicious submissions even with botpoison
+      if (suspiciousCount >= 2) {
+        console.log('🚫 Multiple suspicious indicators detected despite botpoison verification');
+        return NextResponse.json(
+          { error: 'Submission flagged by security system. Please contact us directly if this is an error.' },
+          { status: 400 }
+        );
+      }
+    }
+
     // Determine if this submission needs review
-    const needsReview = !botpoison || suspiciousCount > 0;
-    const securityStatus = botpoison ? 'verified' : 'unverified';
+    const needsReview = !botpoisonVerified || suspiciousCount > 0;
 
     // Create new contact
     const contactData = {
@@ -143,7 +146,7 @@ export async function POST(request: NextRequest) {
         securityStatus: securityStatus,
         needsReview: needsReview,
         userAgent: userAgent,
-        botpoisonVerified: !!botpoison
+        botpoisonVerified: botpoisonVerified
       },
       archived: false,
       created_at: new Date().toISOString(),
