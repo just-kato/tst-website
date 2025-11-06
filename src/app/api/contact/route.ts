@@ -49,19 +49,20 @@ export async function POST(request: NextRequest) {
     const devBypass = process.env.BOTPOISON_DEV_BYPASS === 'true';
     const emergencyDisable = process.env.BOTPOISON_EMERGENCY_DISABLE === 'true';
 
+    // Check for obvious bot indicators first (needed for review flagging later)
+    const suspiciousIndicators = [
+      !userAgent || userAgent.includes('bot') || userAgent.includes('crawler'),
+      !submissionTime || (Date.now() - submissionTime) > 300000, // Older than 5 minutes
+      name.toLowerCase().includes('bot') || email.toLowerCase().includes('bot'),
+    ];
+
+    const suspiciousCount = suspiciousIndicators.filter(Boolean).length;
+
     if (emergencyDisable) {
       console.log('🚨 Emergency disable active - skipping all bot protection');
     } else if (isDev && devBypass && botpoison === 'dev-bypass-token') {
       console.log('🚧 Development bypass used - skipping botpoison verification');
     } else {
-      // Check for obvious bot indicators first
-      const suspiciousIndicators = [
-        !userAgent || userAgent.includes('bot') || userAgent.includes('crawler'),
-        !submissionTime || (Date.now() - submissionTime) > 300000, // Older than 5 minutes
-        name.toLowerCase().includes('bot') || email.toLowerCase().includes('bot'),
-      ];
-
-      const suspiciousCount = suspiciousIndicators.filter(Boolean).length;
 
       if (botpoison) {
         // If we have a botpoison token, verify it

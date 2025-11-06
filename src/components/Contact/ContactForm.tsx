@@ -60,7 +60,7 @@ const ContactForm: React.FC<ContactFormProps> = ({ isContactPage = false, varian
 
     try {
       // Get botpoison token with fallback
-      let botpoisonSolution = null;
+      let botpoisonSolution: string | null = null;
 
       if (botpoison) {
         try {
