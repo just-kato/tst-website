@@ -189,7 +189,6 @@ export default function RootLayout({
     ],
     contactPoint: {
       '@type': 'ContactPoint',
-      telephone: '+1-XXX-XXX-XXXX', // Add actual phone
       contactType: 'Customer Service',
       email: 'care@toastedsesametherapy.com',
       availableLanguage: 'English'
@@ -199,6 +198,81 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <head>
+        {/* Early console interceptor - MUST be first to catch all analytics noise */}
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `
+// Early Console Interceptor - blocks Google Tags/analytics noise immediately
+if (typeof console !== 'undefined') {
+  const original = {
+    log: console.log,
+    warn: console.warn,
+    info: console.info,
+    debug: console.debug,
+    group: console.group,
+    groupEnd: console.groupEnd,
+    groupCollapsed: console.groupCollapsed,
+  };
+
+  const blockPatterns = [
+    'google', 'gtag', 'analytics', 'dataLayer', 'measurement', 'tag assistant', 'gtm', 'goog',
+    'clarity', 'microsoft', '██', '▓', '░', '▒', '┌', '└', '┐', '┘', '│', '─', '┼', '┤', '├',
+    'install', 'extension', 'chrome', 'version', 'download', 'upgrade', 'tag manager',
+    'google-analytics', 'ga4', 'universal analytics', 'firebase', 'recaptcha',
+    // Additional aggressive blocking
+    'orchestration:', 'initializing', 'config store', 'feature flag', 'user store', 'updating combined state',
+    'react devtools', 'devtools', 'development experience', 'react.dev/link', 'better development',
+    'image with src', 'width or height modified', 'aspect ratio', 'warnonce', 'maintain the aspect',
+    'vercel', 'speed insights', 'use-merged-ref', 'commitattachref', 'insights]',
+    'runwithfiberindev', 'safelyattachref', 'commitlayouteffect', 'react-dom-client', 'scheduler',
+    // Google Analytics debug output that's still getting through
+    'sending event', 'page_view', 'request parameters', 'event parameters', 'shared parameters',
+    'to undefined', 'undefined', 'parameters:'
+  ];
+
+  const createInterceptor = (originalMethod) => function(...args) {
+    const isDebugMode = window.location.search.includes('debug=true');
+    if (isDebugMode) return originalMethod.apply(console, args);
+
+    const messageString = args.map(arg =>
+      typeof arg === 'object' ? (typeof JSON !== 'undefined' ? JSON.stringify(arg) : String(arg)) : String(arg)
+    ).join(' ');
+
+    const lowerMessage = messageString.toLowerCase();
+
+    // Block anything matching our patterns
+    const shouldBlock = blockPatterns.some(pattern =>
+      lowerMessage.includes(pattern.toLowerCase())
+    ) ||
+    // Block very long messages (likely stack traces or promotional content)
+    messageString.length > 200 ||
+    // Block anything with multiple newlines (ASCII art, stack traces)
+    (messageString.match(/\\n/g) || []).length > 2 ||
+    // Block anything from chunk files (webpack noise)
+    lowerMessage.includes('chunk-') ||
+    // Block React internal warnings and stack traces
+    (lowerMessage.includes('react') && messageString.length > 100);
+
+    if (!shouldBlock) {
+      return originalMethod.apply(console, args);
+    }
+  };
+
+  console.log = createInterceptor(original.log);
+  console.warn = createInterceptor(original.warn);
+  console.info = createInterceptor(original.info);
+  console.debug = createInterceptor(original.debug);
+  console.group = createInterceptor(original.group);
+  console.groupEnd = createInterceptor(original.groupEnd);
+  console.groupCollapsed = createInterceptor(original.groupCollapsed);
+
+  window.__originalConsole = original;
+  original.log('🚫 Early console interceptor loaded - blocking analytics noise');
+}
+            `,
+          }}
+        />
+
         <meta name="viewport" content="width=device-width, initial-scale=1" />
         <meta name="format-detection" content="telephone=no" />
         <meta name="msapplication-TileColor" content="#F9F5F2" />

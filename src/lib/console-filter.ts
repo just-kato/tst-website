@@ -13,12 +13,18 @@ const originalConsole = {
 
 // Patterns to filter out (case-insensitive)
 const NOISE_PATTERNS = [
-  // Google Analytics / GTM noise
+  // Google Analytics / GTM noise (be VERY aggressive)
   'gtag',
-  'google-analytics',
+  'google',
+  'analytics',
   'dataLayer',
   'ga4',
   'measurement_id',
+  'google tags',
+  'googletagmanager',
+  'tag assistant',
+  'gtm',
+  'goog',
 
   // Navigation noise
   'NavigationLoadingIndicator',
@@ -38,6 +44,29 @@ const NOISE_PATTERNS = [
   'HMR',
   'hot reload',
   'webpack',
+
+  // ASCII art and promotional content (common patterns)
+  '██',
+  '▓▓',
+  '▒▒',
+  '░░',
+  '▄▄',
+  '▀▀',
+  '│',
+  '┌',
+  '└',
+  '┐',
+  '┘',
+  '─',
+  '┴',
+  '┬',
+  'install',
+  'upgrade',
+  'version',
+  'download',
+  'extension',
+  'chrome',
+  'extension id',
 ];
 
 // Check if debug mode is enabled
@@ -53,16 +82,36 @@ const isDebugMode = (): boolean => {
 };
 
 // Check if a message should be filtered
-const shouldFilter = (message: string): boolean => {
-  if (typeof message !== 'string') return false;
+const shouldFilter = (messageString: string): boolean => {
+  if (!messageString || typeof messageString !== 'string') return false;
 
   // Never filter in debug mode
   if (isDebugMode()) return false;
 
-  const lowerMessage = message.toLowerCase();
-  return NOISE_PATTERNS.some(pattern =>
+  const lowerMessage = messageString.toLowerCase();
+
+  // Check against all noise patterns
+  const hasNoise = NOISE_PATTERNS.some(pattern =>
     lowerMessage.includes(pattern.toLowerCase())
   );
+
+  // Also filter multiline messages that look like ASCII art
+  const isAsciiArt = messageString.includes('\n') && (
+    messageString.includes('██') ||
+    messageString.includes('▓') ||
+    messageString.includes('░') ||
+    messageString.includes('▒') ||
+    messageString.includes('┌') ||
+    messageString.includes('└') ||
+    messageString.includes('│') ||
+    messageString.includes('─')
+  );
+
+  // Filter anything that looks like promotional content
+  const isPromotional = lowerMessage.includes('install') &&
+                        lowerMessage.includes('extension');
+
+  return hasNoise || isAsciiArt || isPromotional;
 };
 
 // Filter function for console methods
@@ -101,7 +150,7 @@ const createFilteredConsole = (originalMethod: Function, methodName: string) => 
     }
 
     // Allow everything else through
-    return originalMethod.apply(console, args);
+    return originalMethod.apply(args);
   };
 };
 
@@ -112,12 +161,23 @@ const createFilteredConsole = (originalMethod: Function, methodName: string) => 
 export const initConsoleFilter = () => {
   if (typeof window === 'undefined') return; // Server-side safe
 
-  // Only apply filtering in development
+  // Apply filtering in development (and be aggressive about it)
   if (process.env.NODE_ENV === 'development') {
+    // Override all console methods aggressively
     console.log = createFilteredConsole(originalConsole.log, 'log');
     console.warn = createFilteredConsole(originalConsole.warn, 'warn');
     console.info = createFilteredConsole(originalConsole.info, 'info');
+    console.debug = createFilteredConsole(originalConsole.info, 'info'); // Treat debug like info
+
+    // Also override any global console if it exists
+    if (typeof globalThis !== 'undefined' && globalThis.console) {
+      globalThis.console.log = createFilteredConsole(originalConsole.log, 'log');
+      globalThis.console.warn = createFilteredConsole(originalConsole.warn, 'warn');
+      globalThis.console.info = createFilteredConsole(originalConsole.info, 'info');
+    }
+
     // Don't filter errors - always show them
+    console.log('🧹 Aggressive console filtering enabled - no more noise!');
   }
 };
 

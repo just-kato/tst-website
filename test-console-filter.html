@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Console Filter Test</title>
+</head>
+<body>
+    <h1>Console Filter Test</h1>
+    <p>Open browser console and click the button below to test if Google Tags noise is blocked.</p>
+    <button onclick="testConsoleFilter()">Test Console Filter</button>
+
+    <script>
+        function testConsoleFilter() {
+            // These should be BLOCKED by the nuclear filter
+            console.log('Google Tags Manager is awesome!');
+            console.log('gtag("config", "GA_MEASUREMENT_ID");');
+            console.log('dataLayer.push({event: "page_view"});');
+            console.log('Analytics tracking initialized');
+            console.log(`
+    ██████╗  ██████╗  ██████╗  ██████╗ ██╗     ███████╗
+    ██╔════╝ ██╔═══██╗██╔═══██╗██╔════╝ ██║     ██╔════╝
+    ██║  ███╗██║   ██║██║   ██║██║  ███╗██║     █████╗
+    ██║   ██║██║   ██║██║   ██║██║   ██║██║     ██╔══╝
+    ╚██████╔╝╚██████╔╝╚██████╔╝╚██████╔╝███████╗███████╗
+             `);
+            console.log('Please install the Google Tag Assistant extension');
+
+            // These should be ALLOWED through
+            console.log('This is a normal log message');
+            console.log('App loaded successfully');
+            console.error('This error should always show');
+            console.log('User clicked submit button');
+
+            alert('Check your console! Google Tags messages should be blocked, but normal messages should show.');
+        }
+    </script>
+</body>
+</html>
