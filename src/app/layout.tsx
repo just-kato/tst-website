@@ -12,6 +12,7 @@ import { SpeedInsights } from '@vercel/speed-insights/next';
 import ApolloProviderWrapper from '@/lib/apollo/client';
 import { NavigationProvider } from '@/contexts/NavigationContext';
 import NavigationLoadingIndicator from '@/components/NavigationLoadingIndicator/NavigationLoadingIndicator';
+import ConsoleFilter from '@/components/ConsoleFilter/ConsoleFilter';
 
 const workSans = Work_Sans({
   subsets: ['latin'],
@@ -272,6 +273,7 @@ export default function RootLayout({
 
         <NavigationProvider>
           <ApolloProviderWrapper>
+            <ConsoleFilter />
             <ToasterClient />
             <NavigationLoadingIndicator />
 

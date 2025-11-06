@@ -60,7 +60,7 @@ export default function ThankYouPage() {
                     </div>
                     <div className="text-left">
                       <p className="font-semibold text-left">Watch for My Email</p>
-                      <p className="text-gray-600 text-left">You'll receive a confirmation with your secure video link and appointment details.</p>
+                      <p className="text-gray-600 text-left">I’ll personally reply to the information you shared. You’ll hear from me soon with next steps for your free 15 minute consult.</p>
                     </div>
                   </div>
                   <div className="flex items-start gap-3">
@@ -78,7 +78,7 @@ export default function ThankYouPage() {
                     </div>
                     <div className="text-left">
                       <p className="font-semibold text-left">Meet Your Therapist</p>
-                      <p className="text-gray-600 text-left">Join your 15-minute consultation to share what's on your mind and see how therapy could support you.</p>
+                      <p className="text-gray-600 text-left">I’ll send you a secure video link for your consult. When the time comes, join the call to share what’s on your mind and see how therapy could support you.</p>
                     </div>
                   </div>
                 </div>
@@ -92,7 +92,6 @@ export default function ThankYouPage() {
                 <ul className="text-sm text-gray-700 space-y-2">
                   <li>• Your consultation is completely free with no obligations</li>
                   <li>• We'll meet via secure video link (no need to download anything)</li>
-                  <li>• If you need to cancel or reschedule, use the link in your confirmation email</li>
                   <li>
   • Questions? Email us at{" "}
   <a

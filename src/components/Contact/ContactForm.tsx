@@ -1,11 +1,12 @@
 // Update src/components/Contact/ContactForm.tsx
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Button from '@/components/Button/Button';
 import Input from '@/components/Input/Input';
 import { formatPhoneNumber } from '@/lib/validation';
+import Botpoison from '@botpoison/browser';
 
 interface ContactFormProps {
   isContactPage?: boolean;
@@ -22,6 +23,14 @@ const ContactForm: React.FC<ContactFormProps> = ({ isContactPage = false, varian
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [contactExists, setContactExists] = useState(false);
+  const [botpoison, setBotpoison] = useState<Botpoison | null>(null);
+
+  useEffect(() => {
+    const bp = new Botpoison({
+      publicKey: process.env.NEXT_PUBLIC_BOTPOISON_SITE_KEY!,
+    });
+    setBotpoison(bp);
+  }, []);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -50,6 +59,21 @@ const ContactForm: React.FC<ContactFormProps> = ({ isContactPage = false, varian
     setContactExists(false);
 
     try {
+      // Get botpoison token with fallback
+      let botpoisonSolution = null;
+
+      if (botpoison) {
+        try {
+          const challengeResult = await botpoison.challenge();
+          botpoisonSolution = challengeResult.solution;
+        } catch (botpoisonError) {
+          // Continue without botpoison - let server handle gracefully
+          if (process.env.NODE_ENV === 'development' && process.env.DEBUG_BOTPOISON === 'true') {
+            console.warn('Botpoison challenge failed:', botpoisonError);
+          }
+        }
+      }
+
       const response = await fetch('/api/contact', {
         method: 'POST',
         headers: {
@@ -60,6 +84,10 @@ const ContactForm: React.FC<ContactFormProps> = ({ isContactPage = false, varian
           email: formData.email.toLowerCase().trim(),
           phone: formData.phone.trim(),
           variant: variant,
+          botpoison: botpoisonSolution,
+          // Add user agent and timestamp for additional verification
+          userAgent: typeof navigator !== 'undefined' ? navigator.userAgent : null,
+          submissionTime: Date.now(),
         }),
       });
 
@@ -71,6 +99,12 @@ const ContactForm: React.FC<ContactFormProps> = ({ isContactPage = false, varian
           setError(data.error);
           return;
         }
+
+        // More specific error handling
+        if (response.status === 400 && data.error.includes('Bot protection')) {
+          throw new Error('Security verification failed. Please try again.');
+        }
+
         throw new Error(data.error || 'Failed to submit contact form');
       }
 

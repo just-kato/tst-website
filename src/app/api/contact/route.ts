@@ -10,16 +10,89 @@ const supabase = createClient(
 
 const resend = new Resend(process.env.RESEND_API_KEY);
 
+async function verifyBotpoison(solution: string): Promise<boolean> {
+  try {
+    const response = await fetch('https://api.botpoison.com/verify', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        secretKey: process.env.BOTPOISON_SECRET_KEY,
+        solution,
+      }),
+    });
+
+    const data = await response.json();
+    // Botpoison API returns { ok: true } for successful verification
+    return data.ok === true;
+  } catch (error) {
+    console.error('Botpoison verification error:', error);
+    return false;
+  }
+}
+
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { name, email, phone, variant = 'contact' } = body;
+    const { name, email, phone, variant = 'contact', botpoison, userAgent, submissionTime } = body;
 
     if (!name || !email) {
       return NextResponse.json(
         { error: 'Name and email are required' },
         { status: 400 }
       );
+    }
+
+    // Smart bot protection with fallbacks
+    const isDev = process.env.NODE_ENV === 'development';
+    const devBypass = process.env.BOTPOISON_DEV_BYPASS === 'true';
+    const emergencyDisable = process.env.BOTPOISON_EMERGENCY_DISABLE === 'true';
+
+    if (emergencyDisable) {
+      console.log('🚨 Emergency disable active - skipping all bot protection');
+    } else if (isDev && devBypass && botpoison === 'dev-bypass-token') {
+      console.log('🚧 Development bypass used - skipping botpoison verification');
+    } else {
+      // Check for obvious bot indicators first
+      const suspiciousIndicators = [
+        !userAgent || userAgent.includes('bot') || userAgent.includes('crawler'),
+        !submissionTime || (Date.now() - submissionTime) > 300000, // Older than 5 minutes
+        name.toLowerCase().includes('bot') || email.toLowerCase().includes('bot'),
+      ];
+
+      const suspiciousCount = suspiciousIndicators.filter(Boolean).length;
+
+      if (botpoison) {
+        // If we have a botpoison token, verify it
+        const isVerified = await verifyBotpoison(botpoison);
+        if (!isVerified) {
+          console.log('Botpoison verification failed - checking other indicators');
+
+          // If botpoison fails but user seems legitimate, allow with warning
+          if (suspiciousCount === 0 && userAgent && submissionTime) {
+            console.log('⚠️  Botpoison failed but user appears legitimate - allowing with warning');
+            // Continue to create contact but flag for review
+          } else {
+            return NextResponse.json(
+              { error: 'Security verification failed. Please try again or contact us directly.' },
+              { status: 400 }
+            );
+          }
+        }
+      } else {
+        // No botpoison token - check other indicators
+        if (suspiciousCount >= 2) {
+          console.log('No botpoison token and multiple suspicious indicators detected');
+          return NextResponse.json(
+            { error: 'Security verification required. Please enable JavaScript and try again.' },
+            { status: 400 }
+          );
+        } else if (suspiciousCount >= 1) {
+          console.log('⚠️  No botpoison but some suspicious indicators - allowing with warning');
+          // Continue but flag for review
+        }
+      }
     }
 
     // Check for existing contact
@@ -47,6 +120,10 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // Determine if this submission needs review
+    const needsReview = !botpoison || suspiciousCount > 0;
+    const securityStatus = botpoison ? 'verified' : 'unverified';
+
     // Create new contact
     const contactData = {
       name: name.trim(),
@@ -61,7 +138,11 @@ export async function POST(request: NextRequest) {
       custom_fields: {
         source: variant === 'trauma' ? 'trauma_booking_form' : 'contact_form',
         variant: variant,
-        submittedAt: new Date().toISOString()
+        submittedAt: new Date().toISOString(),
+        securityStatus: securityStatus,
+        needsReview: needsReview,
+        userAgent: userAgent,
+        botpoisonVerified: !!botpoison
       },
       archived: false,
       created_at: new Date().toISOString(),
