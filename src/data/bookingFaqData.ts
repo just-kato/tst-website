@@ -2,10 +2,6 @@
 
 export const generalBookingFaqs = [
   {
-    question: "What is a fit-or-free session?",
-    answer: "If your first full session after the free consultation doesn’t feel like a good fit, you won’t be charged for it. This ensures you only invest in an intake session that feels supportive and right for you."
-  },
-  {
     question: "Can I use HSA or FSA funds for therapy?",
     answer: "Yes, therapy is generally an eligible expense for Health Savings Accounts (HSAs) and Flexible Spending Accounts (FSAs). Since coverage details can vary, it’s best to confirm eligibility directly with your HSA/FSA provider."
   },

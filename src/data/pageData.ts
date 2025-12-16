@@ -106,7 +106,7 @@ export const howItWorksSteps = [
   {
     number: '04',
     title: 'Start With Confidence',
-    description: "If you’d like to continue, I’ll set up your portal and we’ll choose a time for your first full session. Sessions are $150. Your first full session is guaranteed with no charge if you don’t continue.",
+    description: "If you’d like to continue, I’ll set up your portal and we’ll choose a time for your first full session. Sessions are $150. The first full session is a chance to get oriented and focus on what matters to you.",
     imageUrl:
       'https://pvbdrbaquwivhylsmagn.supabase.co/storage/v1/object/public/tst-assets/website%20assets/step_4_v2.webp',
     imageAlt: 'Illustration of a cloud character at a laptop',

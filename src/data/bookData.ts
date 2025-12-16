@@ -32,7 +32,7 @@ export const howFitFreeWorksSteps = [
   {
     number: '04',
     title: 'Start With Confidence',
-    description:'If you’d like to move forward, I’ll set up your portal and schedule your first full session. Sessions are $150, and your first one is covered by the Fit-or-Free guarantee, no charge if you decide not to continue.',
+    description:'If you’d like to move forward, I’ll set up your portal and schedule your first full session. Sessions are $150, and the first full session is a chance to get oriented and focus on what matters to you.',
     imageUrl:
       'https://pvbdrbaquwivhylsmagn.supabase.co/storage/v1/object/public/tst-assets/website%20assets/step_4_v2.webp',
     imageAlt: 'Illustration of a cloud character at a laptop',
@@ -41,7 +41,7 @@ export const howFitFreeWorksSteps = [
 ];
 
 export const stepSection = {
-  title: 'Book → Try → Decide <br/>Fit-or-Free first session',
+  title: 'What working together looks like',
   subtitleTop:
     `No more wasted time or money trying therapists who don't click. <br/>If it's not a fit, you don't pay.`,
   subtitleBottom: `Here's how to get started`,

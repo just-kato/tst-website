@@ -229,13 +229,7 @@ const AdditionalContent: React.FC<AdditionalContentProps> = ({
               className="text-3xl md:text-5xl font-extrabold mb-6 text-gray-900"
               dangerouslySetInnerHTML={{ __html: stepSection.title }}
             />
-            <p
-              className="text-lg text-gray-700 mb-16 font-medium"
-              dangerouslySetInnerHTML={{ __html: stepSection.subtitleTop }}
-            />
-            <h3 className="text-xl text-gray-700 font-bold">
-              {stepSection.subtitleBottom}
-            </h3>
+            
           </div>
           <div className="flex flex-col min-h-1000">
             {howItWorksSteps.map((step, index) => {

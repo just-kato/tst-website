@@ -443,10 +443,10 @@ const BookingPageClient: React.FC<BookingPageProps> = ({ variant }) => {
           <p className="text-sm text-gray-500">
             Questions? Email us at{' '}
             <a
-              href="mailto:hello@example.com"
+              href="mailto:care@toastedsesametherapy.com"
               className="font-medium text-tst-purple hover:underline"
             >
-              hello@example.com
+              care@toastedsesametherapy.com
             </a>
           </p>
         </div>

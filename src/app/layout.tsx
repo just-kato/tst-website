@@ -52,7 +52,6 @@ export const metadata: Metadata = {
     'queer therapy',
     'trans-affirming therapy',
     'complex trauma therapy',
-    'fit-or-free sessions'
   ].join(', '),
   manifest: '/site.webmanifest',
   icons: {
