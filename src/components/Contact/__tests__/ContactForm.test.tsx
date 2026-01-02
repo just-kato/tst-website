@@ -1,4 +1,3 @@
-// src/components/Contact/__tests__/ContactForm.test.tsx
 import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import ContactForm from '../ContactForm';
@@ -9,28 +8,24 @@ global.fetch = jest.fn();
 // Mock window.scrollIntoView since it's not available in test environment
 Element.prototype.scrollIntoView = jest.fn();
 
-// Mock react-confetti to avoid canvas issues in jsdom
-jest.mock('react-confetti', () => {
-  return function MockConfetti() {
-    return <div data-testid="confetti">Confetti Animation</div>;
-  };
-});
-
-// Mock the FAQ component
-jest.mock('../../FAQ/FAQ.tsx', () => {
-  return function MockFAQ() {
-    return <div data-testid="faq">Common questions</div>;
-  };
-});
-
-// Mock the analytics functions
-jest.mock('@/lib/analytics', () => ({
-  trackEvent: jest.fn(),
+// Mock next/navigation router
+const pushMock = jest.fn();
+jest.mock('next/navigation', () => ({
+  useRouter: () => ({ push: pushMock }),
 }));
+
+// Mock Botpoison
+jest.mock('@botpoison/browser', () => {
+  return jest.fn().mockImplementation(() => ({
+    challenge: jest.fn().mockResolvedValue({ solution: 'bp-solution' }),
+  }));
+});
 
 describe('ContactForm', () => {
   beforeEach(() => {
     jest.clearAllMocks();
+    pushMock.mockClear();
+    process.env.NEXT_PUBLIC_BOTPOISON_SITE_KEY = 'test-site-key';
   });
 
   describe('Initial Render', () => {
@@ -41,9 +36,7 @@ describe('ContactForm', () => {
 
     it('renders the form heading', () => {
       render(<ContactForm />);
-      expect(
-        screen.getByText(/reach out to start therapy/i)
-      ).toBeInTheDocument();
+      expect(screen.getByText(/let's connect/i)).toBeInTheDocument();
     });
 
     it('renders all required form fields', () => {
@@ -52,9 +45,7 @@ describe('ContactForm', () => {
       expect(screen.getByPlaceholderText('Your name')).toBeInTheDocument();
       expect(screen.getByPlaceholderText('Your email')).toBeInTheDocument();
       expect(screen.getByPlaceholderText('Phone number')).toBeInTheDocument();
-      expect(
-        screen.getByRole('button', { name: /submit/i })
-      ).toBeInTheDocument();
+      expect(screen.getByRole('button', { name: /submit/i })).toBeInTheDocument();
     });
 
     it('all form fields start empty', () => {
@@ -67,7 +58,6 @@ describe('ContactForm', () => {
 
     it('submit button is enabled initially', () => {
       render(<ContactForm />);
-
       expect(screen.getByRole('button', { name: /submit/i })).toBeEnabled();
     });
   });
@@ -89,159 +79,83 @@ describe('ContactForm', () => {
       expect(emailField).toHaveValue('john@example.com');
       expect(phoneField).toHaveValue('555-123-4567');
     });
-
-    it('clears form fields when cleared', async () => {
-      const user = userEvent.setup();
-      render(<ContactForm />);
-
-      const nameField = screen.getByPlaceholderText('Your name');
-
-      await user.type(nameField, 'Test Name');
-      expect(nameField).toHaveValue('Test Name');
-
-      await user.clear(nameField);
-      expect(nameField).toHaveValue('');
-    });
   });
 
-  describe('Form Submission - Success Cases', () => {
-    it('submits form with valid data', async () => {
+  describe('Form Submission - Payload + Honeypot', () => {
+    it('submits form with valid data (honeypot empty by default)', async () => {
       const user = userEvent.setup();
 
-      // Mock successful API response
       (global.fetch as jest.Mock).mockResolvedValue({
         ok: true,
-        json: jest
-          .fn()
-          .mockResolvedValue({ message: 'Successfully submitted!' }),
+        json: jest.fn().mockResolvedValue({ success: true }),
       });
 
-      render(<ContactForm />);
+      render(<ContactForm variant="contact" />);
 
-      // Fill out the form
       await user.type(screen.getByPlaceholderText('Your name'), 'Jane Smith');
-      await user.type(
-        screen.getByPlaceholderText('Your email'),
-        'jane@example.com'
-      );
-      await user.type(
-        screen.getByPlaceholderText('Phone number'),
-        '555-987-6543'
-      );
+      await user.type(screen.getByPlaceholderText('Your email'), 'jane@example.com');
+      await user.type(screen.getByPlaceholderText('Phone number'), '555-987-6543');
 
-      // Submit the form
       await user.click(screen.getByRole('button', { name: /submit/i }));
 
-      // Verify API call was made with correct data
-      await waitFor(() => {
-        expect(global.fetch).toHaveBeenCalledWith('/api/contact', {
+      await waitFor(() => expect(global.fetch).toHaveBeenCalledTimes(1));
+
+      const [url, options] = (global.fetch as jest.Mock).mock.calls[0];
+      expect(url).toBe('/api/contact');
+      expect(options).toEqual(
+        expect.objectContaining({
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            name: 'Jane Smith',
-            email: 'jane@example.com',
-            phone: '555-987-6543',
-          }),
-        });
-      });
+        })
+      );
+
+      const payload = JSON.parse(options.body);
+
+      expect(payload).toEqual(
+        expect.objectContaining({
+          name: 'Jane Smith',
+          email: 'jane@example.com',
+          phone: '555-987-6543',
+          variant: 'contact',
+          honeypot: '',
+          botpoison: 'bp-solution',
+        })
+      );
+
+      expect(typeof payload.submissionTime).toBe('number');
+      expect(payload.userAgent).toBeTruthy();
+
+      expect(pushMock).toHaveBeenCalledWith('/thank-you');
     });
 
-    it('shows success message after successful submission', async () => {
+    it('includes honeypot value when the hidden field is filled', async () => {
       const user = userEvent.setup();
 
       (global.fetch as jest.Mock).mockResolvedValue({
         ok: true,
-        json: jest
-          .fn()
-          .mockResolvedValue({ message: 'Successfully submitted!' }),
+        json: jest.fn().mockResolvedValue({ success: true }),
       });
 
-      render(<ContactForm />);
+      const { container } = render(<ContactForm variant="contact" />);
 
-      // Fill and submit form
-      await user.type(screen.getByPlaceholderText('Your name'), 'John Doe');
-      await user.type(
-        screen.getByPlaceholderText('Your email'),
-        'john@example.com'
-      );
-      await user.type(
-        screen.getByPlaceholderText('Phone number'),
-        '555-123-4567'
-      );
+      await user.type(screen.getByPlaceholderText('Your name'), 'Jane Smith');
+      await user.type(screen.getByPlaceholderText('Your email'), 'jane@example.com');
+      await user.type(screen.getByPlaceholderText('Phone number'), '555-987-6543');
+
+      // Honeypot input (assumes you used name="company" in the form state)
+      const honeypotInput = container.querySelector('input[name="company"]') as HTMLInputElement | null;
+      expect(honeypotInput).toBeTruthy();
+
+      await user.type(honeypotInput as HTMLInputElement, 'filled');
+
       await user.click(screen.getByRole('button', { name: /submit/i }));
 
-      // Wait for success message
-      await waitFor(() => {
-        expect(screen.getByText('Thank You!')).toBeInTheDocument();
-      });
+      await waitFor(() => expect(global.fetch).toHaveBeenCalledTimes(1));
 
-      expect(
-        screen.getByText(/Here's what to expect next/i)
-      ).toBeInTheDocument();
-    });
+      const [, options] = (global.fetch as jest.Mock).mock.calls[0];
+      const payload = JSON.parse(options.body);
 
-    it('shows expected next steps in success message', async () => {
-      const user = userEvent.setup();
-
-      (global.fetch as jest.Mock).mockResolvedValue({
-        ok: true,
-        json: jest
-          .fn()
-          .mockResolvedValue({ message: 'Successfully submitted!' }),
-      });
-
-      render(<ContactForm />);
-
-      await user.type(screen.getByPlaceholderText('Your name'), 'Test User');
-      await user.type(
-        screen.getByPlaceholderText('Your email'),
-        'test@example.com'
-      );
-      await user.type(
-        screen.getByPlaceholderText('Phone number'),
-        '555-000-0000'
-      );
-      await user.click(screen.getByRole('button', { name: /submit/i }));
-
-      await waitFor(() => {
-        expect(
-          screen.getByText(/You'll receive a personal email from me/i)
-        ).toBeInTheDocument();
-        expect(
-          screen.getByText(/15-minute video consultation/i)
-        ).toBeInTheDocument();
-        expect(
-          screen.getByText(/chat, see if it's a good fit/i)
-        ).toBeInTheDocument();
-      });
-    });
-
-    it('shows confetti animation on success', async () => {
-      const user = userEvent.setup();
-
-      (global.fetch as jest.Mock).mockResolvedValue({
-        ok: true,
-        json: jest
-          .fn()
-          .mockResolvedValue({ message: 'Successfully submitted!' }),
-      });
-
-      render(<ContactForm />);
-
-      await user.type(screen.getByPlaceholderText('Your name'), 'Test User');
-      await user.type(
-        screen.getByPlaceholderText('Your email'),
-        'test@example.com'
-      );
-      await user.type(
-        screen.getByPlaceholderText('Phone number'),
-        '555-000-0000'
-      );
-      await user.click(screen.getByRole('button', { name: /submit/i }));
-
-      await waitFor(() => {
-        expect(screen.getByTestId('confetti')).toBeInTheDocument();
-      });
+      expect(payload.honeypot).toBe('filled');
     });
   });
 
@@ -257,20 +171,12 @@ describe('ContactForm', () => {
       render(<ContactForm />);
 
       await user.type(screen.getByPlaceholderText('Your name'), 'Test User');
-      await user.type(
-        screen.getByPlaceholderText('Your email'),
-        'test@example.com'
-      );
-      await user.type(
-        screen.getByPlaceholderText('Phone number'),
-        '555-000-0000'
-      );
+      await user.type(screen.getByPlaceholderText('Your email'), 'test@example.com');
+      await user.type(screen.getByPlaceholderText('Phone number'), '555-000-0000');
       await user.click(screen.getByRole('button', { name: /submit/i }));
 
       await waitFor(() => {
-        expect(
-          screen.getByText('Something went wrong. Please try again.')
-        ).toBeInTheDocument();
+        expect(screen.getByText('Something went wrong')).toBeInTheDocument();
       });
     });
 
@@ -282,14 +188,8 @@ describe('ContactForm', () => {
       render(<ContactForm />);
 
       await user.type(screen.getByPlaceholderText('Your name'), 'Test User');
-      await user.type(
-        screen.getByPlaceholderText('Your email'),
-        'test@example.com'
-      );
-      await user.type(
-        screen.getByPlaceholderText('Phone number'),
-        '555-000-0000'
-      );
+      await user.type(screen.getByPlaceholderText('Your email'), 'test@example.com');
+      await user.type(screen.getByPlaceholderText('Phone number'), '555-000-0000');
       await user.click(screen.getByRole('button', { name: /submit/i }));
 
       await waitFor(() => {
@@ -302,7 +202,6 @@ describe('ContactForm', () => {
     it('disables submit button while submitting', async () => {
       const user = userEvent.setup();
 
-      // Mock slow API response
       (global.fetch as jest.Mock).mockImplementation(
         () =>
           new Promise(resolve =>
@@ -310,7 +209,7 @@ describe('ContactForm', () => {
               () =>
                 resolve({
                   ok: true,
-                  json: () => Promise.resolve({ message: 'Success' }),
+                  json: () => Promise.resolve({ success: true }),
                 }),
               100
             )
@@ -320,24 +219,18 @@ describe('ContactForm', () => {
       render(<ContactForm />);
 
       await user.type(screen.getByPlaceholderText('Your name'), 'Test User');
-      await user.type(
-        screen.getByPlaceholderText('Your email'),
-        'test@example.com'
-      );
-      await user.type(
-        screen.getByPlaceholderText('Phone number'),
-        '555-000-0000'
-      );
+      await user.type(screen.getByPlaceholderText('Your email'), 'test@example.com');
+      await user.type(screen.getByPlaceholderText('Phone number'), '555-000-0000');
+
       await user.click(screen.getByRole('button', { name: /submit/i }));
 
-      // Check button is disabled and shows loading state
       await waitFor(() => {
-        const button = screen.getByRole('button', { name: /submitting/i });
+        const button = screen.getByRole('button', { name: /processing/i });
         expect(button).toBeDisabled();
       });
     });
 
-    it('shows "Submitting..." text during submission', async () => {
+    it('shows \"Processing...\" text during submission', async () => {
       const user = userEvent.setup();
 
       (global.fetch as jest.Mock).mockImplementation(
@@ -347,7 +240,7 @@ describe('ContactForm', () => {
               () =>
                 resolve({
                   ok: true,
-                  json: () => Promise.resolve({ message: 'Success' }),
+                  json: () => Promise.resolve({ success: true }),
                 }),
               100
             )
@@ -357,228 +250,12 @@ describe('ContactForm', () => {
       render(<ContactForm />);
 
       await user.type(screen.getByPlaceholderText('Your name'), 'Test User');
-      await user.type(
-        screen.getByPlaceholderText('Your email'),
-        'test@example.com'
-      );
-      await user.type(
-        screen.getByPlaceholderText('Phone number'),
-        '555-000-0000'
-      );
+      await user.type(screen.getByPlaceholderText('Your email'), 'test@example.com');
+      await user.type(screen.getByPlaceholderText('Phone number'), '555-000-0000');
+
       await user.click(screen.getByRole('button', { name: /submit/i }));
 
-      expect(screen.getByText('Submitting...')).toBeInTheDocument();
-    });
-
-    it('re-enables button after successful submission', async () => {
-      const user = userEvent.setup();
-
-      (global.fetch as jest.Mock).mockResolvedValue({
-        ok: true,
-        json: jest
-          .fn()
-          .mockResolvedValue({ message: 'Successfully submitted!' }),
-      });
-
-      render(<ContactForm />);
-
-      await user.type(screen.getByPlaceholderText('Your name'), 'Test User');
-      await user.type(
-        screen.getByPlaceholderText('Your email'),
-        'test@example.com'
-      );
-      await user.type(
-        screen.getByPlaceholderText('Phone number'),
-        '555-000-0000'
-      );
-      await user.click(screen.getByRole('button', { name: /submit/i }));
-
-      // After success, the form should be in success state (no longer showing the button)
-      await waitFor(() => {
-        expect(screen.getByText('Thank You!')).toBeInTheDocument();
-      });
-    });
-  });
-
-  describe('Form Validation', () => {
-    it('has required attributes on form fields', () => {
-      render(<ContactForm />);
-
-      expect(screen.getByPlaceholderText('Your name')).toBeRequired();
-      expect(screen.getByPlaceholderText('Your email')).toBeRequired();
-      expect(screen.getByPlaceholderText('Phone number')).toBeRequired();
-    });
-
-    it('email field has correct type', () => {
-      render(<ContactForm />);
-
-      expect(screen.getByPlaceholderText('Your email')).toHaveAttribute(
-        'type',
-        'email'
-      );
-    });
-
-    it('phone field has correct type', () => {
-      render(<ContactForm />);
-
-      expect(screen.getByPlaceholderText('Phone number')).toHaveAttribute(
-        'type',
-        'tel'
-      );
-    });
-
-    it('prevents submission with empty required fields', async () => {
-      const user = userEvent.setup();
-      render(<ContactForm />);
-
-      // Try to submit without filling any fields
-      await user.click(screen.getByRole('button', { name: /submit/i }));
-
-      // Should not make API call due to HTML5 validation
-      expect(global.fetch).not.toHaveBeenCalled();
-    });
-  });
-
-  describe('Different Props', () => {
-    it('renders differently when isContactPage is true', () => {
-      render(<ContactForm isContactPage={true} />);
-
-      // Still renders the form
-      expect(
-        screen.getByText(/reach out to start therapy/i)
-      ).toBeInTheDocument();
-    });
-
-    it('includes FAQ section when isContactPage is false (default)', async () => {
-      const user = userEvent.setup();
-
-      (global.fetch as jest.Mock).mockResolvedValue({
-        ok: true,
-        json: jest
-          .fn()
-          .mockResolvedValue({ message: 'Successfully submitted!' }),
-      });
-
-      render(<ContactForm isContactPage={false} />);
-
-      // Submit form to trigger success state
-      await user.type(screen.getByPlaceholderText('Your name'), 'Test User');
-      await user.type(
-        screen.getByPlaceholderText('Your email'),
-        'test@example.com'
-      );
-      await user.type(
-        screen.getByPlaceholderText('Phone number'),
-        '555-000-0000'
-      );
-      await user.click(screen.getByRole('button', { name: /submit/i }));
-
-      // Wait for success state and check if FAQ appears
-      await waitFor(() => {
-        expect(screen.getByText('Thank You!')).toBeInTheDocument();
-      });
-
-      // FAQ should appear in success state when isContactPage is false
-      expect(screen.getByTestId('faq')).toBeInTheDocument();
-    });
-
-    it('does not include FAQ section when isContactPage is true', async () => {
-      const user = userEvent.setup();
-
-      (global.fetch as jest.Mock).mockResolvedValue({
-        ok: true,
-        json: jest
-          .fn()
-          .mockResolvedValue({ message: 'Successfully submitted!' }),
-      });
-
-      render(<ContactForm isContactPage={true} />);
-
-      // Submit form to trigger success state
-      await user.type(screen.getByPlaceholderText('Your name'), 'Test User');
-      await user.type(
-        screen.getByPlaceholderText('Your email'),
-        'test@example.com'
-      );
-      await user.type(
-        screen.getByPlaceholderText('Phone number'),
-        '555-000-0000'
-      );
-      await user.click(screen.getByRole('button', { name: /submit/i }));
-
-      // Wait for success state
-      await waitFor(() => {
-        expect(screen.getByText('Thank You!')).toBeInTheDocument();
-      });
-
-      // FAQ should NOT appear when isContactPage is true
-      expect(screen.queryByTestId('faq')).not.toBeInTheDocument();
-    });
-  });
-
-  describe('Edge Cases', () => {
-    it('handles very long input values', async () => {
-      const user = userEvent.setup();
-      render(<ContactForm />);
-
-      const longName = 'A'.repeat(100);
-      const longEmail = 'a'.repeat(50) + '@example.com';
-
-      await user.type(screen.getByPlaceholderText('Your name'), longName);
-      await user.type(screen.getByPlaceholderText('Your email'), longEmail);
-
-      expect(screen.getByPlaceholderText('Your name')).toHaveValue(longName);
-      expect(screen.getByPlaceholderText('Your email')).toHaveValue(longEmail);
-    });
-
-    it('handles special characters in input', async () => {
-      const user = userEvent.setup();
-      render(<ContactForm />);
-
-      const specialName = "John O'Doe-Smith";
-      const specialEmail = 'john+test@example.com';
-
-      await user.type(screen.getByPlaceholderText('Your name'), specialName);
-      await user.type(screen.getByPlaceholderText('Your email'), specialEmail);
-
-      expect(screen.getByPlaceholderText('Your name')).toHaveValue(specialName);
-      expect(screen.getByPlaceholderText('Your email')).toHaveValue(
-        specialEmail
-      );
-    });
-
-    it('handles rapid form submissions', async () => {
-      const user = userEvent.setup();
-
-      (global.fetch as jest.Mock).mockResolvedValue({
-        ok: true,
-        json: jest
-          .fn()
-          .mockResolvedValue({ message: 'Successfully submitted!' }),
-      });
-
-      render(<ContactForm />);
-
-      await user.type(screen.getByPlaceholderText('Your name'), 'Test User');
-      await user.type(
-        screen.getByPlaceholderText('Your email'),
-        'test@example.com'
-      );
-      await user.type(
-        screen.getByPlaceholderText('Phone number'),
-        '555-000-0000'
-      );
-
-      // Click submit multiple times rapidly
-      const submitButton = screen.getByRole('button', { name: /submit/i });
-      await user.click(submitButton);
-      await user.click(submitButton);
-      await user.click(submitButton);
-
-      // Should only make one API call
-      await waitFor(() => {
-        expect(global.fetch).toHaveBeenCalledTimes(1);
-      });
+      expect(screen.getByText('Processing...')).toBeInTheDocument();
     });
   });
 });

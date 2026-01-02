@@ -16,6 +16,7 @@ interface SubscribeModalProps {
 
 const SubscribeModal: React.FC<SubscribeModalProps> = ({ isOpen, onClose }) => {
   const [email, setEmail] = useState('');
+  const [company, setCompany] = useState(''); // honeypot
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSubmitted, setIsSubmitted] = useState(false);
 
@@ -31,7 +32,11 @@ const SubscribeModal: React.FC<SubscribeModalProps> = ({ isOpen, onClose }) => {
       const response = await fetch('/api/newsletter/subscribe', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, name: 'Newsletter Subscriber' }),
+        body: JSON.stringify({
+          email,
+          name: 'Newsletter Subscriber',
+          honeypot: company?.trim() || '',
+        }),
       });
 
       if (!response.ok) {
@@ -45,6 +50,7 @@ const SubscribeModal: React.FC<SubscribeModalProps> = ({ isOpen, onClose }) => {
         // Reset state for next time
         setIsSubmitted(false);
         setEmail('');
+        setCompany('');
       }, 2500);
     } catch (err: any) {
       toast.error(err.message);
@@ -116,6 +122,29 @@ const SubscribeModal: React.FC<SubscribeModalProps> = ({ isOpen, onClose }) => {
                   bonus therapy resource in your inbox each month.
                 </p>
                 <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+                  {/* Honeypot field (should remain empty) */}
+                  <div
+                    aria-hidden="true"
+                    style={{
+                      position: 'absolute',
+                      left: '-10000px',
+                      top: 'auto',
+                      width: '1px',
+                      height: '1px',
+                      overflow: 'hidden',
+                    }}
+                  >
+                    <label htmlFor="company">Company</label>
+                    <input
+                      type="text"
+                      id="company"
+                      name="company"
+                      tabIndex={-1}
+                      autoComplete="off"
+                      value={company}
+                      onChange={e => setCompany(e.target.value)}
+                    />
+                  </div>
                   <Input
                     type="email"
                     placeholder="Your email"
