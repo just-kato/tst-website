@@ -35,7 +35,7 @@ async function verifyBotpoison(solution: string): Promise<boolean> {
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { name, email, phone, variant = 'contact', botpoison, userAgent, submissionTime } = body;
+    const { name, email, phone, variant = 'contact', botpoison, userAgent, submissionTime, honeypot } = body;
 
     if (!name || !email) {
       return NextResponse.json(
@@ -43,7 +43,16 @@ export async function POST(request: NextRequest) {
         { status: 400 }
       );
     }
+    if (typeof honeypot === 'string' && honeypot.trim().length > 0) {
+      return NextResponse.json({ success: true }, { status: 200 });
+    }
+    const elapsed =
+  typeof submissionTime === 'number' ? Date.now() - submissionTime : null;
 
+// Only speed-trap if they DIDN'T provide botpoison
+if (!botpoison && elapsed !== null && elapsed < 800) {
+  return NextResponse.json({ success: true }, { status: 200 });
+}
     // Smart bot protection with fallbacks
     const isDev = process.env.NODE_ENV === 'development';
     const devBypass = process.env.BOTPOISON_DEV_BYPASS === 'true';
@@ -108,7 +117,6 @@ export async function POST(request: NextRequest) {
     // Strict enforcement: Block unverified submissions unless in dev/emergency mode
     if (!emergencyDisable && !(isDev && devBypass && botpoison === 'dev-bypass-token')) {
       if (!botpoisonVerified) {
-        console.log('🚫 Botpoison verification required but failed/missing');
         return NextResponse.json(
           { error: 'Security verification failed. Please ensure JavaScript is enabled and try again.' },
           { status: 400 }
@@ -117,7 +125,6 @@ export async function POST(request: NextRequest) {
 
       // Also block obviously suspicious submissions even with botpoison
       if (suspiciousCount >= 2) {
-        console.log('🚫 Multiple suspicious indicators detected despite botpoison verification');
         return NextResponse.json(
           { error: 'Submission flagged by security system. Please contact us directly if this is an error.' },
           { status: 400 }
@@ -125,7 +132,6 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    // Determine if this submission needs review
     const needsReview = !botpoisonVerified || suspiciousCount > 0;
 
     // Create new contact

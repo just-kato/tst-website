@@ -19,7 +19,7 @@ interface ContactFormProps {
 
 const ContactForm: React.FC<ContactFormProps> = ({ isContactPage = false, variant = 'contact', maxHeight, header, subheader }) => {
   const router = useRouter();
-  const [formData, setFormData] = useState({ name: '', email: '', phone: '' });
+  const [formData, setFormData] = useState({ name: '', email: '', phone: '', company: '' });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [contactExists, setContactExists] = useState(false);
@@ -52,83 +52,110 @@ const ContactForm: React.FC<ContactFormProps> = ({ isContactPage = false, varian
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  e.preventDefault();
 
-    setIsSubmitting(true);
-    setError(null);
-    setContactExists(false);
+  setIsSubmitting(true);
+  setError(null);
+  setContactExists(false);
 
-    try {
-      // Get botpoison token with fallback
-      let botpoisonSolution: string | null = null;
+  try {
+    // Get botpoison token with fallback
+    let botpoisonSolution: string | null = null;
 
-      if (botpoison) {
-        try {
-          const challengeResult = await botpoison.challenge();
-          botpoisonSolution = challengeResult.solution;
-        } catch (botpoisonError) {
-          // Continue without botpoison - let server handle gracefully
-          if (process.env.NODE_ENV === 'development' && process.env.DEBUG_BOTPOISON === 'true') {
-            console.warn('Botpoison challenge failed:', botpoisonError);
-          }
+    if (botpoison) {
+      try {
+        const challengeResult = await botpoison.challenge();
+        botpoisonSolution = challengeResult.solution;
+      } catch (botpoisonError) {
+        // Continue without botpoison - let server handle gracefully
+        if (
+          process.env.NODE_ENV === 'development' &&
+          process.env.DEBUG_BOTPOISON === 'true'
+        ) {
+          console.warn('Botpoison challenge failed:', botpoisonError);
         }
       }
-
-      const response = await fetch('/api/contact', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          name: formData.name.trim(),
-          email: formData.email.toLowerCase().trim(),
-          phone: formData.phone.trim(),
-          variant: variant,
-          botpoison: botpoisonSolution,
-          // Add user agent and timestamp for additional verification
-          userAgent: typeof navigator !== 'undefined' ? navigator.userAgent : null,
-          submissionTime: Date.now(),
-        }),
-      });
-
-      const data = await response.json();
-
-      if (!response.ok) {
-        if (response.status === 409 && data.contactExists) {
-          setContactExists(true);
-          setError(data.error);
-          return;
-        }
-
-        // More specific error handling
-        if (response.status === 400 && data.error.includes('Bot protection')) {
-          throw new Error('Security verification failed. Please try again.');
-        }
-
-        throw new Error(data.error || 'Failed to submit contact form');
-      }
-
-      // Track the lead generation
-      if (typeof window !== 'undefined') {
-        window.dataLayer = window.dataLayer || [];
-        window.dataLayer.push({
-          event: 'generate_lead_form_start',
-          page_source: variant === 'trauma' ? 'trauma_booking' : variant === 'nd' ? 'nd_booking' : variant === 'affirming' ? 'affirming_booking' : (isContactPage ? 'contact' : 'homepage'),
-          form_location: window.location.pathname,
-          form_type: variant === 'trauma' ? 'trauma_booking' : variant === 'nd' ? 'nd_booking' : variant === 'affirming' ? 'affirming_booking' : (isContactPage ? 'contact' : 'homepage'),
-          variant: variant,
-        });
-      }
-
-      // Redirect to thank you page
-      router.push('/thank-you');
-    } catch (err: any) {
-      console.error('Contact form submission error:', err);
-      setError(err.message || 'An unexpected error occurred. Please try again.');
-    } finally {
-      setIsSubmitting(false);
     }
-  };
+
+    const response = await fetch('/api/contact', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        name: formData.name.trim(),
+        email: formData.email.toLowerCase().trim(),
+        phone: formData.phone.trim(),
+        variant: variant,
+
+        // 🐝 Honeypot (should always be empty)
+        honeypot: formData.company?.trim() || '',
+
+        // Botpoison
+        botpoison: botpoisonSolution,
+
+        // Extra verification signals
+        userAgent: typeof navigator !== 'undefined' ? navigator.userAgent : null,
+        submissionTime: Date.now(),
+      }),
+    });
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      if (response.status === 409 && data.contactExists) {
+        setContactExists(true);
+        setError(data.error);
+        return;
+      }
+
+      // Bot protection error
+      if (response.status === 400 && data.error?.includes('Bot protection')) {
+        throw new Error('Security verification failed. Please try again.');
+      }
+
+      throw new Error(data.error || 'Failed to submit contact form');
+    }
+
+    // Track the lead generation
+    if (typeof window !== 'undefined') {
+      window.dataLayer = window.dataLayer || [];
+      window.dataLayer.push({
+        event: 'generate_lead_form_start',
+        page_source:
+          variant === 'trauma'
+            ? 'trauma_booking'
+            : variant === 'nd'
+            ? 'nd_booking'
+            : variant === 'affirming'
+            ? 'affirming_booking'
+            : isContactPage
+            ? 'contact'
+            : 'homepage',
+        form_location: window.location.pathname,
+        form_type:
+          variant === 'trauma'
+            ? 'trauma_booking'
+            : variant === 'nd'
+            ? 'nd_booking'
+            : variant === 'affirming'
+            ? 'affirming_booking'
+            : isContactPage
+            ? 'contact'
+            : 'homepage',
+        variant: variant,
+      });
+    }
+
+    // Redirect to thank you page
+    router.push('/thank-you');
+  } catch (err: any) {
+    console.error('Contact form submission error:', err);
+    setError(err.message || 'An unexpected error occurred. Please try again.');
+  } finally {
+    setIsSubmitting(false);
+  }
+};
 
   const handleEmailClick = () => {
     if (typeof window !== 'undefined') {
@@ -204,6 +231,28 @@ const ContactForm: React.FC<ContactFormProps> = ({ isContactPage = false, varian
             <p className="mb-10">{subheader !== undefined ? subheader : getVariantContent().subheader}</p>
 
           <form id="contact-form" onSubmit={handleSubmit}>
+                        <div
+              aria-hidden="true"
+              style={{
+                position: 'absolute',
+                left: '-10000px',
+                top: 'auto',
+                width: '1px',
+                height: '1px',
+                overflow: 'hidden',
+              }}
+            >
+              <label htmlFor="company">Company</label>
+              <input
+                type="text"
+                id="company"
+                name="company"
+                tabIndex={-1}
+                autoComplete="off"
+                value={formData.company}
+                onChange={handleChange}
+              />
+            </div>
             <div className="flex flex-col gap-8">
               <Input
                 type="text"
