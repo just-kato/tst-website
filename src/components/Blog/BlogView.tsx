@@ -222,7 +222,7 @@ const BlogView = () => {
             <Button
               className="bg-tst-purple flex items-center w-full lg:w-auto justify-center"
               onClick={() =>
-                router.push('/dashboard/mental-health-healing-blog/create')
+                router.push('/dashboard/blog/create')
               }
             >
               <PlusCircle className="mr-2 h-4 w-4" /> Create Blog Post
